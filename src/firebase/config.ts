@@ -15,10 +15,13 @@ const firebaseConfig = {
 
 // Check if Firebase configuration is provided
 export const isFirebaseConfigured = (): boolean => {
+  const key = import.meta.env.VITE_FIREBASE_API_KEY;
   return (
-    !!import.meta.env.VITE_FIREBASE_API_KEY &&
-    import.meta.env.VITE_FIREBASE_API_KEY !== 'mock_dev_key' &&
-    import.meta.env.VITE_FIREBASE_API_KEY !== 'your_firebase_api_key_here'
+    !!key &&
+    key !== 'mock_dev_key' &&
+    key !== 'mock_dev_api_key' &&
+    key !== 'your_firebase_api_key_here' &&
+    !key.startsWith('mock_')
   );
 };
 
@@ -67,6 +70,9 @@ try {
 
 // Helper to sign in anonymously
 export const ensureAnonymousAuth = async (): Promise<User | null> => {
+  if (!isFirebaseConfigured()) {
+    return null;
+  }
   try {
     if (auth.currentUser) {
       return auth.currentUser;
