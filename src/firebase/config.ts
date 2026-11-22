@@ -1,7 +1,7 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth, signInAnonymously, Auth, User } from 'firebase/auth';
 import { getFirestore, Firestore } from 'firebase/firestore';
-import { initializeAppCheck, ReCaptchaV3Provider, AppCheck } from 'firebase/app-check';
+import { initializeAppCheck, ReCaptchaV3Provider, ReCaptchaEnterpriseProvider, AppCheck } from 'firebase/app-check';
 import { getAI, GoogleAIBackend, AI } from 'firebase/ai';
 
 const firebaseConfig = {
@@ -36,22 +36,35 @@ export const auth: Auth = getAuth(app);
 // Initialize Cloud Firestore
 export const db: Firestore = getFirestore(app);
 
-// Initialize Firebase App Check
+// Initialize Firebase App Check (reCAPTCHA v3 or Enterprise with dev debug token)
 export let appCheck: AppCheck | null = null;
 
 if (typeof window !== 'undefined') {
-  const isDebug = import.meta.env.VITE_FIREBASE_APP_CHECK_DEBUG_TOKEN === 'true' || import.meta.env.DEV;
-  if (isDebug) {
-    // In dev mode, enable App Check debug token
+  const debugTokenEnv = import.meta.env.VITE_FIREBASE_APP_CHECK_DEBUG_TOKEN;
+  const isDebug = debugTokenEnv === 'true' || import.meta.env.DEV;
+
+  if (debugTokenEnv && debugTokenEnv !== 'true' && debugTokenEnv !== 'false') {
+    // Custom debug token string configured in environment
+    // @ts-expect-error - App Check debug token on window
+    self.FIREBASE_APPCHECK_DEBUG_TOKEN = debugTokenEnv;
+  } else if (isDebug) {
+    // In dev mode, auto-generate and log debug token in browser console
     // @ts-expect-error - App Check debug token on window
     self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
   }
 
   const siteKey = import.meta.env.VITE_FIREBASE_APP_CHECK_SITE_KEY;
+  const providerType = import.meta.env.VITE_FIREBASE_APP_CHECK_PROVIDER || 'recaptcha-v3';
+
   if (siteKey && siteKey !== 'your_recaptcha_site_key') {
     try {
+      const provider =
+        providerType === 'enterprise'
+          ? new ReCaptchaEnterpriseProvider(siteKey)
+          : new ReCaptchaV3Provider(siteKey);
+
       appCheck = initializeAppCheck(app, {
-        provider: new ReCaptchaV3Provider(siteKey),
+        provider,
         isTokenAutoRefreshEnabled: true,
       });
     } catch (err) {
