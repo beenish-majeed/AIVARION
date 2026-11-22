@@ -1,6 +1,6 @@
 import { doc, collection, setDoc } from 'firebase/firestore';
 import { db, ensureAnonymousAuth, isFirebaseConfigured } from '../firebase/config';
-import { StudyPlan, UserTask, SanitizationResult } from '../types';
+import { StudyPlan, UserTask, SanitizationResult, PendingCloudRequest } from '../types';
 import { StudyPlanSchema, UserTaskSchema } from '../schemas';
 import { sanitizeText, SanitizerOptions } from './sanitizer';
 import { executeCloudInference } from './aiService';
