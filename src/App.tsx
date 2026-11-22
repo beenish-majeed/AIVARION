@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { LandingPage } from './components/landing/LandingPage';
-import { AppShellSkeleton } from './components/app/AppShellSkeleton';
+import { AppShell } from './components/app/AppShell';
 
 export const App: React.FC = () => {
   const [currentPath, setCurrentPath] = useState<string>(() => {
@@ -44,7 +44,7 @@ export const App: React.FC = () => {
   };
 
   if (currentPath === '/app') {
-    return <AppShellSkeleton onNavigateHome={() => navigateTo('/')} />;
+    return <AppShell onNavigateHome={() => navigateTo('/')} />;
   }
 
   return <LandingPage onNavigate={navigateTo} />;
