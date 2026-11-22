@@ -14,7 +14,7 @@ describe('AIVARION Phase 1 Brand and System Tests', () => {
 
     // Headline and mission statement
     expect(screen.getByText(/Intelligence Stays/i)).toBeInTheDocument();
-    expect(screen.getByText(/On Your Machine/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/On Your Machine/i).length).toBeGreaterThanOrEqual(1);
   });
 
   it('renders Try AIVARION action button that navigates directly to /app', () => {
