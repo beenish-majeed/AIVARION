@@ -183,7 +183,12 @@ export const ChatView: React.FC<ChatViewProps> = ({
   return (
     <div className="flex-1 flex flex-col h-full bg-[#0B0B0B] overflow-hidden">
       {/* Messages Thread Container */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+      <div
+        className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6"
+        role="log"
+        aria-live="polite"
+        aria-label="Conversation message history"
+      >
         {messages.map((msg) => {
           const isUser = msg.role === 'user';
           return (
@@ -276,7 +281,11 @@ export const ChatView: React.FC<ChatViewProps> = ({
 
         {/* Error Alert Box */}
         {errorMessage && (
-          <div className="p-4 rounded-xl bg-red-950/40 border border-red-800/80 text-red-200 text-sm flex items-start gap-3">
+          <div
+            className="p-4 rounded-xl bg-red-950/40 border border-red-800/80 text-red-200 text-sm flex items-start gap-3"
+            role="alert"
+            aria-live="assertive"
+          >
             <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
             <div className="space-y-1">
               <div className="font-semibold text-red-300">Inference Notification</div>
@@ -296,6 +305,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
               type="text"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
+              aria-label="Message prompt input"
               placeholder={
                 currentMode === 'private_local'
                   ? 'Ask anything (100% on-device private computation)...'
