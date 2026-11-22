@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  background-color: #0B0B0B;
+  color: #FAFAFA;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+/* Custom scrollbar matching Jet Black & Hot Pink palette */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0B0B0B;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #27272A;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #FF2DA8;
+}
+
+/* Glassmorphism surfaces */
+.glass-panel {
+  background: rgba(20, 20, 20, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-panel-hover:hover {
+  border-color: rgba(255, 45, 168, 0.35);
+  box-shadow: 0 0 25px rgba(255, 45, 168, 0.1);
+}
+
+/* Subtle glow effects */
+.glow-pink-sm {
+  box-shadow: 0 0 15px -3px rgba(255, 45, 168, 0.3);
+}
+
+.glow-pink-md {
+  box-shadow: 0 0 30px -5px rgba(255, 45, 168, 0.4);
+}
+
+.glow-chartreuse-sm {
+  box-shadow: 0 0 12px -2px rgba(212, 255, 63, 0.5);
+}
