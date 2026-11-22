@@ -32,6 +32,9 @@ import {
 } from '../../db';
 import { checkDeviceModelAvailability } from '../../services/aiService';
 import { ChatView } from './ChatView';
+import { LearnView } from './LearnView';
+import { NotesView } from './NotesView';
+import { SettingsView } from './SettingsView';
 
 interface AppShellProps {
   onNavigateHome: () => void;
@@ -411,18 +414,26 @@ export const AppShell: React.FC<AppShellProps> = ({
             />
           )}
 
-          {activeTab !== 'chat' && (
+          {activeTab === 'learn' && <LearnView />}
+
+          {activeTab === 'notes' && <NotesView />}
+
+          {activeTab === 'settings' && (
+            <SettingsView
+              currentMode={currentMode}
+              onChangeMode={setCurrentMode}
+            />
+          )}
+
+          {activeTab === 'plan' && (
             <div className="h-full flex items-center justify-center p-6 text-center">
               <div className="max-w-md p-8 rounded-2xl bg-zinc-900/40 border border-zinc-800 space-y-4">
                 <div className="w-12 h-12 rounded-xl bg-zinc-800 mx-auto flex items-center justify-center text-[#FF2DA8]">
-                  {activeTab === 'learn' && <GraduationCap className="w-6 h-6" />}
-                  {activeTab === 'notes' && <FileText className="w-6 h-6" />}
-                  {activeTab === 'plan' && <CalendarCheck className="w-6 h-6" />}
-                  {activeTab === 'settings' && <Settings className="w-6 h-6" />}
+                  <CalendarCheck className="w-6 h-6" />
                 </div>
-                <h3 className="text-xl font-bold text-white capitalize">{activeTab} Module</h3>
+                <h3 className="text-xl font-bold text-white capitalize">7-Day Cloud Plan</h3>
                 <p className="text-xs text-zinc-400 leading-relaxed">
-                  Scheduled for Phase 4 (Learn & Notes) and Phase 5 (Sanitized Cloud Plan & Approval Flow).
+                  Scheduled for Phase 5 (Sanitized Data Preview, Approval Gate & Firestore writes).
                 </p>
               </div>
             </div>
