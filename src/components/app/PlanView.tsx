@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   CalendarCheck,
   ShieldCheck,
@@ -12,13 +12,19 @@ import {
   AlertCircle,
   Eye,
   Check,
+  RefreshCw,
+  Trash2,
+  WifiOff,
 } from 'lucide-react';
-import { StudyPlan, UserTask } from '../../types';
+import { StudyPlan, UserTask, PendingCloudRequest } from '../../types';
 import {
   prepareStudyPlanPayload,
   PreparedStudyPlanRequest,
   executeCloudStudyPlan,
   saveApprovedTasksToFirestore,
+  listPendingRequests,
+  deletePendingRequest,
+  rePrepareFromPending,
 } from '../../services/studyPlanService';
 import { PayloadPreviewModal } from './PayloadPreviewModal';
 
@@ -39,9 +45,27 @@ export const PlanView: React.FC = () => {
   const [savedTasks, setSavedTasks] = useState<UserTask[] | null>(null);
   const [saveRejected, setSaveRejected] = useState(false);
 
+  // Pending offline requests
+  const [pendingRequests, setPendingRequests] = useState<PendingCloudRequest[]>([]);
+  const [activePendingId, setActivePendingId] = useState<string | null>(null);
+
+  const loadPending = useCallback(async () => {
+    try {
+      const items = await listPendingRequests();
+      setPendingRequests(items);
+    } catch (err) {
+      console.warn('Failed to load pending requests:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadPending();
+  }, [loadPending]);
+
   // Step 1: Request Plan -> triggers Gate 1 (Sanitization & Preview Modal)
   const handleInitiatePlanRequest = (e: React.FormEvent) => {
     e.preventDefault();
+    setActivePendingId(null);
     setGenerationError(null);
     setGeneratedPlan(null);
     setSavedTasks(null);
@@ -71,12 +95,37 @@ export const PlanView: React.FC = () => {
     try {
       const plan = await executeCloudStudyPlan(preparedRequest);
       setGeneratedPlan(plan);
+      if (activePendingId) {
+        await deletePendingRequest(activePendingId);
+        setActivePendingId(null);
+        await loadPending();
+      }
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : String(err);
       setGenerationError(errMsg);
+      await loadPending();
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  // Retry an offline queued request (Full sanitization & dual approval cycle)
+  const handleRetryPending = (req: PendingCloudRequest) => {
+    setGenerationError(null);
+    setGeneratedPlan(null);
+    setSavedTasks(null);
+    setSaveRejected(false);
+    setActivePendingId(req.id);
+
+    const prepared = rePrepareFromPending(req);
+    setPreparedRequest(prepared);
+    setShowPreviewModal(true);
+  };
+
+  // Discard a pending request
+  const handleDiscardPending = async (id: string) => {
+    await deletePendingRequest(id);
+    await loadPending();
   };
 
   // Cancel Gate 1 -> Abort cleanly, nothing sent to cloud
@@ -119,6 +168,65 @@ export const PlanView: React.FC = () => {
             Harness cloud intelligence strictly governed by two human approval gates: (1) inspect and approve sanitized payload before transmission, and (2) approve or reject saving tasks to Firestore.
           </p>
         </div>
+
+        {/* Offline Pending Cloud Requests Queue */}
+        {pendingRequests.length > 0 && (
+          <div className="p-6 rounded-2xl bg-[#141416] border border-amber-500/30 shadow-xl space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <WifiOff className="w-5 h-5 text-amber-400" />
+                <h2 className="text-base font-bold text-white font-display">
+                  Offline Pending Cloud Requests ({pendingRequests.length})
+                </h2>
+              </div>
+              <span className="text-[11px] font-mono uppercase px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20">
+                Manual Sync Required
+              </span>
+            </div>
+            <p className="text-xs text-zinc-400 leading-relaxed">
+              These requests were queued locally while offline. For your privacy, AIVARION will <strong className="text-zinc-200">never automatically transmit</strong> pending requests when connectivity returns. Each retry requires explicit preview inspection and dual human approval.
+            </p>
+            <div className="space-y-3 pt-2">
+              {pendingRequests.map((req) => (
+                <div
+                  key={req.id}
+                  className="p-4 rounded-xl bg-zinc-900/80 border border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                >
+                  <div className="space-y-1">
+                    <div className="text-sm font-semibold text-white">
+                      {req.sanitizedPayload.topic}
+                    </div>
+                    <div className="text-xs text-zinc-500 flex items-center gap-2 font-mono">
+                      <span>{new Date(req.createdAt).toLocaleTimeString()}</span>
+                      <span>•</span>
+                      <span className="capitalize">{req.sanitizedPayload.experienceLevel} level</span>
+                      <span>•</span>
+                      <span className="text-[#FF2DA8]">{req.action}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      onClick={() => handleRetryPending(req)}
+                      disabled={isGenerating}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#FF2DA8] hover:bg-[#E02094] text-white text-xs font-semibold transition-all shadow-md shadow-[#FF2DA8]/20"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                      <span>Review & Sync</span>
+                    </button>
+                    <button
+                      onClick={() => handleDiscardPending(req.id)}
+                      disabled={isGenerating}
+                      className="p-2 rounded-full border border-zinc-700 text-zinc-400 hover:text-red-400 hover:border-red-500/50 text-xs transition-colors"
+                      title="Discard queued request"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Input Configuration Form */}
         <div className="p-6 sm:p-8 rounded-2xl bg-[#141416] border border-zinc-800 shadow-xl space-y-6">
