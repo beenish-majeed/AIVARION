@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en" class="dark scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AIVARION — Private, Local-First AI Workspace</title>
+    <meta name="description" content="A private, local-first AI workspace. ChatGPT-style assistant working offline using on-device AI, helping you learn skills, manage personal notes, and plan tasks with zero compromise on privacy." />
+    <meta name="theme-color" content="#0B0B0B" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AIVARION — Private, Local-First AI Workspace" />
+    <meta property="og:description" content="Local-first AI assistant for offline privacy, skill coaching, notes, and user-approved cloud planning." />
+    <meta property="og:image" content="/aivarion-logo.png" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:title" content="AIVARION — Private, Local-First AI Workspace" />
+    <meta property="twitter:description" content="Local-first AI assistant for offline privacy, skill coaching, notes, and user-approved cloud planning." />
+    <meta property="twitter:image" content="/aivarion-logo.png" />
+
+    <!-- Google Fonts: Space Grotesk & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+    <!-- Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://www.google.com https://www.gstatic.com; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://*.google.com blob: data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; frame-src 'self' https://www.google.com https://recaptcha.google.com; worker-src 'self' blob:;" />
+  </head>
+  <body class="bg-[#0B0B0B] text-white antialiased selection:bg-[#FF2DA8] selection:text-white overflow-x-hidden min-h-screen">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
