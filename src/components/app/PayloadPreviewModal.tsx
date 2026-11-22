@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   ShieldAlert,
   CheckCircle2,
@@ -29,12 +29,28 @@ export const PayloadPreviewModal: React.FC<PayloadPreviewModalProps> = ({
   onApprove,
   onCancel,
 }) => {
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onCancel();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onCancel]);
+
   if (!isOpen) return null;
 
   const payloadString = JSON.stringify(payloadObject, null, 2);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="preview-modal-title"
+    >
       <div className="bg-[#121214] border border-zinc-700/80 rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* Modal Top Header */}
         <div className="p-5 border-b border-zinc-800 bg-zinc-900/60 flex items-center justify-between">
@@ -43,7 +59,7 @@ export const PayloadPreviewModal: React.FC<PayloadPreviewModalProps> = ({
               <Eye className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-white font-display">
+              <h3 id="preview-modal-title" className="text-sm font-bold text-white font-display">
                 {title}
               </h3>
               <div className="text-[11px] text-zinc-400 font-mono">
