@@ -88,6 +88,16 @@ Respond ONLY with a valid JSON object matching this exact schema:
     if (!isFirebaseConfigured()) {
       return generateOfflineVerifiedMockPlan(prepared.payloadToTransmit.topic);
     }
+    // Record as pending request on network failure so user can retry manually
+    const pendingId = `pending_${Date.now()}`;
+    await dbLocal.pendingRequests.add({
+      id: pendingId,
+      action: 'study_plan',
+      createdAt: Date.now(),
+      sanitizedPayload: prepared.payloadToTransmit,
+      originalPayloadSnippet: prepared.rawTopic.slice(0, 50),
+      status: 'pending',
+    });
     throw err;
   }
 
@@ -204,3 +214,30 @@ export function generateOfflineVerifiedMockPlan(topic: string): StudyPlan {
     days,
   });
 }
+
+// 4. Offline Pending Requests helpers
+export async function listPendingRequests(): Promise<PendingCloudRequest[]> {
+  return await dbLocal.pendingRequests.orderBy('createdAt').reverse().toArray();
+}
+
+export async function deletePendingRequest(id: string): Promise<void> {
+  await dbLocal.pendingRequests.delete(id);
+}
+
+export function rePrepareFromPending(
+  pending: PendingCloudRequest
+): PreparedStudyPlanRequest {
+  const sanitizationResult = sanitizeText(pending.sanitizedPayload.topic);
+  return {
+    rawTopic: pending.sanitizedPayload.topic,
+    sanitizedTopic: sanitizationResult.sanitizedText,
+    sanitizationResult,
+    payloadToTransmit: {
+      topic: sanitizationResult.sanitizedText.trim() || 'Python Programming Fundamentals',
+      goal: pending.sanitizedPayload.goal || 'Mastery of foundational syntax',
+      experienceLevel: pending.sanitizedPayload.experienceLevel || 'beginner',
+      daysCount: pending.sanitizedPayload.daysCount || 7,
+    },
+  };
+}
+
