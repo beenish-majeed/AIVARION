@@ -31,7 +31,6 @@ export interface DeviceAvailabilityInfo {
 export async function checkDeviceModelAvailability(): Promise<DeviceAvailabilityInfo> {
   // Check Chrome Prompt API (Gemini Nano) directly if available in browser
   if (typeof window !== 'undefined') {
-    // Check window.ai / self.ai / chrome.ai
     // @ts-expect-error - Chrome Built-in AI Prompt API
     const aiApi = window.ai || (window as unknown as { ChromeAI?: unknown }).ChromeAI;
 
@@ -128,12 +127,20 @@ export async function executeOnDeviceInference(
     }
   }
 
-  // If Firebase AI Logic is available
+  // Check if device model is ready via availability check
+  const availability = await checkDeviceModelAvailability();
+  if (availability.status === 'unavailable') {
+    throw new Error(
+      'On-device AI engine is currently unavailable on this device. Private Local mode will never route data to the cloud.'
+    );
+  }
+
+  // If Firebase AI Logic is available and device model is ready
   if (aiService) {
     try {
       const model = getGenerativeModel(aiService, {
-        model: 'gemini-1.5-flash',
         mode: InferenceMode.ONLY_ON_DEVICE,
+        inCloudParams: { model: 'gemini-1.5-flash' },
       });
 
       const result = await model.generateContent(formattedPrompt);

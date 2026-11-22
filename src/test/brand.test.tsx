@@ -25,7 +25,7 @@ describe('AIVARION Phase 1 Brand and System Tests', () => {
 
     // Clicking Try AIVARION switches view to the App shell
     fireEvent.click(tryButtons[0]);
-    expect(screen.getByText(/AIVARION CHAT Module/i)).toBeInTheDocument();
+    expect(screen.getByText(/New Conversation/i)).toBeInTheDocument();
   });
 
   it('provides safe Firebase configuration defaults and detection', () => {
