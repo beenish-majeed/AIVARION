@@ -219,6 +219,8 @@ export const LearnView: React.FC = () => {
                     ? 'bg-[#D4FF3F]/10 border-[#D4FF3F]/40 text-white'
                     : 'bg-red-950/20 border-red-800/40 text-white'
                 }`}
+                role="status"
+                aria-live="polite"
               >
                 <div className="flex items-center gap-2 font-semibold">
                   {currentAttempt.isCorrect ? (
