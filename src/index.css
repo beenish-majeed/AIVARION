@@ -145,12 +145,39 @@ body {
   animation-play-state: paused;
 }
 
+/* Liquid Page Transitions */
+@keyframes liquidWipe {
+  0% {
+    transform: translateY(100%);
+    opacity: 0.95;
+  }
+  45% {
+    transform: translateY(0%);
+    opacity: 1;
+  }
+  55% {
+    transform: translateY(0%);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100%);
+    opacity: 0.95;
+  }
+}
+
+.animate-liquidWipe {
+  animation: liquidWipe 0.75s cubic-bezier(0.76, 0, 0.24, 1) forwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .kinetic-gradient-text {
     animation: none;
     color: #FFFFFF;
   }
   .kinetic-marquee-track {
+    animation: none;
+  }
+  .animate-liquidWipe {
     animation: none;
   }
 }
