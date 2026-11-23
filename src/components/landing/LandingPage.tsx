@@ -104,17 +104,33 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Feature 1: Private Chat */}
-              <div className="reveal-card glass-surface glass-surface-interactive rounded-2xl p-8 flex flex-col justify-between">
+            {/* Bento Grid Architecture */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6">
+              {/* Bento 1: Private Chat (Large, 7 cols) */}
+              <div className="reveal-card lg:col-span-7 glass-surface glass-surface-interactive rounded-2xl p-8 flex flex-col justify-between group">
                 <div>
-                  <div className="w-12 h-12 rounded-xl bg-[#FF2DA8]/10 border border-[#FF2DA8]/30 flex items-center justify-center text-[#FF2DA8] mb-6">
-                    <Sparkles className="w-6 h-6" />
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="w-12 h-12 rounded-xl bg-[#FF2DA8]/10 border border-[#FF2DA8]/30 flex items-center justify-center text-[#FF2DA8]">
+                      <Sparkles className="w-6 h-6" />
+                    </div>
+                    <span className="font-mono text-xs px-2.5 py-1 rounded-full bg-[#FF2DA8]/10 border border-[#FF2DA8]/30 text-[#FF2DA8] font-semibold">
+                      LATENCY &lt; 1ms
+                    </span>
                   </div>
-                  <h3 className="text-2xl font-bold text-white mb-3">Private Local Chat</h3>
+                  <h3 className="text-2xl font-bold text-white mb-2">Private Local Chat</h3>
                   <p className="text-zinc-400 text-sm leading-relaxed mb-6">
                     Single-turn on-device inference with conversation history cached in browser IndexedDB. Every reply explicitly displays its runtime SDK source tag.
                   </p>
+                  {/* Interactive Micro Mockup */}
+                  <div className="p-3.5 rounded-xl bg-black/50 border border-zinc-800/80 font-mono text-xs space-y-2 mb-4">
+                    <div className="text-zinc-400 flex items-center justify-between">
+                      <span>&gt; prompt: "Explain async IO in Python"</span>
+                      <span className="text-[#D4FF3F] text-[10px]">ON_DEVICE</span>
+                    </div>
+                    <div className="text-zinc-200 text-[11px] border-l-2 border-[#FF2DA8] pl-2 py-0.5">
+                      "AsyncIO enables cooperative multitasking using an event loop..."
+                    </div>
+                  </div>
                 </div>
                 <div className="pt-4 border-t border-zinc-800/80 flex items-center justify-between text-xs text-zinc-400">
                   <span className="flex items-center gap-2">
@@ -125,16 +141,25 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                 </div>
               </div>
 
-              {/* Feature 2: Python Skill Coach */}
-              <div className="reveal-card glass-surface glass-surface-interactive rounded-2xl p-8 flex flex-col justify-between">
+              {/* Bento 2: Python Skill Coach (Compact, 5 cols) */}
+              <div className="reveal-card lg:col-span-5 glass-surface glass-surface-interactive rounded-2xl p-8 flex flex-col justify-between group">
                 <div>
-                  <div className="w-12 h-12 rounded-xl bg-zinc-800/80 border border-zinc-700/80 flex items-center justify-center text-white mb-6">
-                    <GraduationCap className="w-6 h-6" />
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="w-12 h-12 rounded-xl bg-zinc-800/80 border border-zinc-700/80 flex items-center justify-center text-white">
+                      <GraduationCap className="w-6 h-6" />
+                    </div>
+                    <span className="font-mono text-xs px-2.5 py-1 rounded-full bg-[#D4FF3F]/10 border border-[#D4FF3F]/30 text-[#D4FF3F] font-semibold">
+                      DETERMINISTIC
+                    </span>
                   </div>
-                  <h3 className="text-2xl font-bold text-white mb-3">Python Skill Coach</h3>
+                  <h3 className="text-2xl font-bold text-white mb-2">Python Skill Coach</h3>
                   <p className="text-zinc-400 text-sm leading-relaxed mb-6">
                     Interactive Python practice generated locally on-device. Answers are evaluated deterministically by deterministic code—never hallucinated by an LLM.
                   </p>
+                  <div className="p-3.5 rounded-xl bg-black/50 border border-zinc-800/80 font-mono text-[11px] text-zinc-300 space-y-1 mb-4">
+                    <div className="text-[#D4FF3F]">✓ assert user_answer === correct_index</div>
+                    <div className="text-zinc-500"># 0 LLM grading error rate</div>
+                  </div>
                 </div>
                 <div className="pt-4 border-t border-zinc-800/80 flex items-center justify-between text-xs text-zinc-400">
                   <span className="flex items-center gap-2">
@@ -145,16 +170,25 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                 </div>
               </div>
 
-              {/* Feature 3: Personal Notes */}
-              <div className="reveal-card glass-surface glass-surface-interactive rounded-2xl p-8 flex flex-col justify-between">
+              {/* Bento 3: Offline Personal Notes (Compact, 5 cols) */}
+              <div className="reveal-card lg:col-span-5 glass-surface glass-surface-interactive rounded-2xl p-8 flex flex-col justify-between group">
                 <div>
-                  <div className="w-12 h-12 rounded-xl bg-zinc-800/80 border border-zinc-700/80 flex items-center justify-center text-white mb-6">
-                    <FileText className="w-6 h-6" />
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="w-12 h-12 rounded-xl bg-zinc-800/80 border border-zinc-700/80 flex items-center justify-center text-white">
+                      <FileText className="w-6 h-6" />
+                    </div>
+                    <span className="font-mono text-xs px-2.5 py-1 rounded-full bg-zinc-800 border border-zinc-700 text-zinc-300 font-semibold">
+                      AIR-GAPPED
+                    </span>
                   </div>
-                  <h3 className="text-2xl font-bold text-white mb-3">Offline Personal Notes</h3>
+                  <h3 className="text-2xl font-bold text-white mb-2">Offline Personal Notes</h3>
                   <p className="text-zinc-400 text-sm leading-relaxed mb-6">
                     Store confidential thoughts and code snippets directly inside your client browser. Notes are never synchronized to the cloud without explicit action.
                   </p>
+                  <div className="p-3.5 rounded-xl bg-black/50 border border-zinc-800/80 font-mono text-[11px] text-zinc-400 flex items-center justify-between mb-4">
+                    <span>Index: notes (title, tags, body)</span>
+                    <span className="text-[#FF2DA8]">NO_TELEMETRY</span>
+                  </div>
                 </div>
                 <div className="pt-4 border-t border-zinc-800/80 flex items-center justify-between text-xs text-zinc-400">
                   <span className="flex items-center gap-2">
@@ -165,16 +199,30 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                 </div>
               </div>
 
-              {/* Feature 4: Cloud 7-Day Study Planner */}
-              <div className="reveal-card glass-surface glass-surface-interactive rounded-2xl p-8 flex flex-col justify-between">
+              {/* Bento 4: Guarded 7-Day Study Planner (Large, 7 cols) */}
+              <div className="reveal-card lg:col-span-7 glass-surface glass-surface-interactive rounded-2xl p-8 flex flex-col justify-between group">
                 <div>
-                  <div className="w-12 h-12 rounded-xl bg-[#FF2DA8]/10 border border-[#FF2DA8]/30 flex items-center justify-center text-[#FF2DA8] mb-6">
-                    <CloudLightning className="w-6 h-6" />
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="w-12 h-12 rounded-xl bg-[#FF2DA8]/10 border border-[#FF2DA8]/30 flex items-center justify-center text-[#FF2DA8]">
+                      <CloudLightning className="w-6 h-6" />
+                    </div>
+                    <span className="font-mono text-xs px-2.5 py-1 rounded-full bg-[#D4FF3F]/10 border border-[#D4FF3F]/30 text-[#D4FF3F] font-semibold">
+                      DUAL APPROVAL GATES
+                    </span>
                   </div>
-                  <h3 className="text-2xl font-bold text-white mb-3">Guarded 7-Day Study Planner</h3>
+                  <h3 className="text-2xl font-bold text-white mb-2">Guarded 7-Day Study Planner</h3>
                   <p className="text-zinc-400 text-sm leading-relaxed mb-6">
                     Harness Gemini cloud capabilities exclusively for complex task planning, governed by sanitized preview inspectability and dual approval gates.
                   </p>
+                  <div className="p-3.5 rounded-xl bg-black/50 border border-zinc-800/80 font-mono text-[11px] flex flex-wrap items-center gap-2 text-zinc-300 mb-4">
+                    <span className="px-2 py-0.5 rounded bg-zinc-800 text-zinc-400">PII Scrubber</span>
+                    <span className="text-zinc-600">→</span>
+                    <span className="px-2 py-0.5 rounded bg-[#FF2DA8]/20 text-[#FF2DA8]">Gate 1: Preview</span>
+                    <span className="text-zinc-600">→</span>
+                    <span className="px-2 py-0.5 rounded bg-zinc-800 text-zinc-400">Cloud AI</span>
+                    <span className="text-zinc-600">→</span>
+                    <span className="px-2 py-0.5 rounded bg-[#D4FF3F]/20 text-[#D4FF3F]">Gate 2: Firestore</span>
+                  </div>
                 </div>
                 <div className="pt-4 border-t border-zinc-800/80 flex items-center justify-between text-xs text-zinc-400">
                   <span className="flex items-center gap-2">
