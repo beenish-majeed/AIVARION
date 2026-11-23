@@ -144,6 +144,19 @@ export const HowItWorksSection: React.FC = () => {
         stagger: 0.15,
         ease: 'power2.out',
       });
+
+      // Cinematic scrollytelling step progression
+      ScrollTrigger.create({
+        trigger: sectionRef.current,
+        start: 'top 55%',
+        end: 'bottom 85%',
+        onUpdate: (self) => {
+          if (self.scroll() > 10) {
+            const step = Math.min(3, Math.floor(self.progress * 4));
+            setActiveStepIndex(step);
+          }
+        },
+      });
     }, sectionRef);
 
     return () => ctx.revert();
@@ -205,8 +218,19 @@ export const HowItWorksSection: React.FC = () => {
           })}
         </div>
 
+        {/* Cinematic Scrollytelling Progress Track */}
+        <div className="w-full bg-zinc-900/80 rounded-full h-1.5 mb-8 overflow-hidden relative border border-zinc-800/80">
+          <div
+            className="h-full bg-gradient-to-r from-[#FF2DA8] to-[#D4FF3F] transition-all duration-500 ease-out shadow-[0_0_12px_rgba(255,45,168,0.5)]"
+            style={{ width: `${((activeStepIndex + 1) / steps.length) * 100}%` }}
+          />
+        </div>
+
         {/* Active Step Detailed Interactive Showcase Panel */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-[#101012] border border-zinc-800 rounded-2xl p-6 sm:p-10 shadow-2xl">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center glass-surface rounded-2xl p-6 sm:p-10 shadow-2xl relative overflow-hidden">
+          {/* Subtle Ambient Radial Glow */}
+          <div className="absolute -right-20 -bottom-20 w-80 h-80 bg-[#FF2DA8]/10 rounded-full blur-[100px] pointer-events-none" />
+
           {/* Left: Description & Rules */}
           <div className="lg:col-span-6 space-y-6">
             <div className="flex items-center gap-3">
