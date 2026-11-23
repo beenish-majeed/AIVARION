@@ -37,6 +37,20 @@ export default defineConfig({
   ],
   build: {
     target: 'esnext',
-    chunkSizeWarningLimit: 1200
-  }
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-firebase': [
+            'firebase/app',
+            'firebase/auth',
+            'firebase/firestore',
+            'firebase/app-check',
+            'firebase/ai',
+          ],
+          'vendor-react': ['react', 'react-dom'],
+        },
+      },
+    },
+  },
 });
