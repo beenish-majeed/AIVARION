@@ -49,7 +49,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
       requestAnimationFrame(raf);
     }
 
-    // 2. GSAP ScrollTrigger Entrance animations for sections
+    // 2. GSAP ScrollTrigger Entrance animations and interactive micro-interactions
     const ctx = gsap.context(() => {
       if (prefersReducedMotion) return;
 
@@ -65,6 +65,42 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
           ease: 'power3.out',
         });
       });
+
+      // 3D Card tilt and hover micro-interactions
+      const cleanupFns: Array<() => void> = [];
+      const interactiveCards = gsap.utils.toArray<HTMLElement>('.glass-surface-interactive');
+      interactiveCards.forEach((card) => {
+        gsap.set(card, { transformPerspective: 900, transformStyle: 'preserve-3d' });
+        const setRotateX = gsap.quickTo(card, 'rotationX', { duration: 0.35, ease: 'power2.out' });
+        const setRotateY = gsap.quickTo(card, 'rotationY', { duration: 0.35, ease: 'power2.out' });
+        const setScale = gsap.quickTo(card, 'scale', { duration: 0.35, ease: 'power2.out' });
+
+        const onCardMove = (e: MouseEvent) => {
+          const rect = card.getBoundingClientRect();
+          const relX = (e.clientX - rect.left) / rect.width - 0.5;
+          const relY = (e.clientY - rect.top) / rect.height - 0.5;
+          setRotateY(relX * 8);
+          setRotateX(-relY * 8);
+          setScale(1.015);
+        };
+
+        const onCardLeave = () => {
+          setRotateX(0);
+          setRotateY(0);
+          setScale(1);
+        };
+
+        card.addEventListener('mousemove', onCardMove);
+        card.addEventListener('mouseleave', onCardLeave);
+        cleanupFns.push(() => {
+          card.removeEventListener('mousemove', onCardMove);
+          card.removeEventListener('mouseleave', onCardLeave);
+        });
+      });
+
+      return () => {
+        cleanupFns.forEach((fn) => fn());
+      };
     }, containerRef);
 
     return () => {
