@@ -261,6 +261,15 @@ export const AppShell: React.FC<AppShellProps> = ({
                         type="text"
                         value={editTitle}
                         onChange={(e) => setEditTitle(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleSaveRename(conv.id, e as unknown as React.MouseEvent);
+                          }
+                          if (e.key === 'Escape') {
+                            setEditingConvId(null);
+                          }
+                        }}
                         className="bg-zinc-900 text-white border border-[#FF2DA8] rounded px-1.5 py-0.5 text-xs w-full focus:outline-none"
                         autoFocus
                       />
@@ -409,6 +418,7 @@ export const AppShell: React.FC<AppShellProps> = ({
             <ChatView
               conversation={activeConversation}
               currentMode={currentMode}
+              onSwitchMode={setCurrentMode}
               onRequireCloudApproval={() => {
                 setActiveTab('plan');
               }}
