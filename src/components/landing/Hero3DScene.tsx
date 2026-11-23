@@ -7,6 +7,7 @@ interface SceneObjectProps {
 }
 
 const CoreRingMesh: React.FC<SceneObjectProps> = ({ isPaused }) => {
+  const groupRef = useRef<THREE.Group>(null);
   const outerRingRef = useRef<THREE.Mesh>(null);
   const innerRingRef = useRef<THREE.Mesh>(null);
   const coreRef = useRef<THREE.Mesh>(null);
@@ -14,6 +15,8 @@ const CoreRingMesh: React.FC<SceneObjectProps> = ({ isPaused }) => {
 
   // Mouse coordinate interpolation target
   const mouse = useRef({ x: 0, y: 0, targetX: 0, targetY: 0 });
+  // Scroll coordinate interpolation target
+  const scrollOffset = useRef({ current: 0, target: 0 });
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -22,8 +25,16 @@ const CoreRingMesh: React.FC<SceneObjectProps> = ({ isPaused }) => {
       mouse.current.targetY = -(e.clientY / innerHeight) * 2 + 1;
     };
 
+    const handleScroll = () => {
+      scrollOffset.current.target = window.scrollY;
+    };
+
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, []);
 
   // Hot Pink brand material
@@ -65,33 +76,46 @@ const CoreRingMesh: React.FC<SceneObjectProps> = ({ isPaused }) => {
     mouse.current.x += (mouse.current.targetX - mouse.current.x) * 0.05;
     mouse.current.y += (mouse.current.targetY - mouse.current.y) * 0.05;
 
+    // Smooth lerp scroll tracking
+    scrollOffset.current.current +=
+      (scrollOffset.current.target - scrollOffset.current.current) * 0.06;
+    const scrollFactor = scrollOffset.current.current * 0.002;
+
     const time = state.clock.getElapsedTime();
 
+    if (groupRef.current) {
+      groupRef.current.rotation.y = scrollFactor * 0.7;
+      groupRef.current.position.y = -Math.min(1.2, scrollFactor * 0.5);
+      groupRef.current.rotation.z = Math.sin(scrollFactor * 0.5) * 0.12;
+    }
+
     if (outerRingRef.current) {
-      outerRingRef.current.rotation.x = Math.sin(time * 0.4) * 0.25 + mouse.current.y * 0.4;
-      outerRingRef.current.rotation.y = time * 0.35 + mouse.current.x * 0.5;
+      outerRingRef.current.rotation.x = Math.sin(time * 0.4) * 0.25 + mouse.current.y * 0.4 + scrollFactor * 0.4;
+      outerRingRef.current.rotation.y = time * 0.35 + mouse.current.x * 0.5 + scrollFactor * 0.6;
       outerRingRef.current.rotation.z = Math.cos(time * 0.3) * 0.15;
+      const ringScale = 1 + Math.min(0.18, scrollFactor * 0.08);
+      outerRingRef.current.scale.set(ringScale, ringScale, ringScale);
     }
 
     if (innerRingRef.current) {
-      innerRingRef.current.rotation.x = -Math.sin(time * 0.3) * 0.2 - mouse.current.y * 0.3;
-      innerRingRef.current.rotation.y = -time * 0.25 - mouse.current.x * 0.4;
+      innerRingRef.current.rotation.x = -Math.sin(time * 0.3) * 0.2 - mouse.current.y * 0.3 - scrollFactor * 0.5;
+      innerRingRef.current.rotation.y = -time * 0.25 - mouse.current.x * 0.4 - scrollFactor * 0.4;
       innerRingRef.current.rotation.z = Math.sin(time * 0.4) * 0.2;
     }
 
     if (coreRef.current) {
-      coreRef.current.rotation.y = time * 0.2;
+      coreRef.current.rotation.y = time * 0.2 + scrollFactor * 0.3;
       const pulse = 1 + Math.sin(time * 2) * 0.03;
       coreRef.current.scale.set(pulse, pulse, pulse);
     }
 
     if (glowLightRef.current) {
-      glowLightRef.current.intensity = 1.8 + Math.sin(time * 3) * 0.4;
+      glowLightRef.current.intensity = 1.8 + Math.sin(time * 3) * 0.4 + Math.min(1.0, scrollFactor);
     }
   });
 
   return (
-    <group position={[0, 0, 0]}>
+    <group ref={groupRef} position={[0, 0, 0]}>
       {/* Outer Hot Pink Ribbon Ring (Torus) */}
       <mesh ref={outerRingRef} material={pinkMaterial}>
         <torusGeometry args={[2.2, 0.28, 36, 100]} />
