@@ -3,6 +3,8 @@ import { Navbar } from '../layout/Navbar';
 import { Footer } from '../layout/Footer';
 import { HeroSection } from './HeroSection';
 import { HowItWorksSection } from './HowItWorksSection';
+import { MagneticCursor } from './MagneticCursor';
+import { MagneticButton } from './MagneticButton';
 import {
   ShieldCheck,
   CheckCircle2,
@@ -78,6 +80,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
 
   return (
     <div ref={containerRef} className="min-h-screen bg-[#0B0B0B] text-white flex flex-col selection:bg-[#FF2DA8] selection:text-white">
+      {/* Magnetic Cursor Follower */}
+      <MagneticCursor />
+
       {/* Brand Header */}
       <Navbar currentPath="/" onNavigate={onNavigate} />
 
@@ -377,14 +382,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
               Launch your private local AI workspace right now. Works offline, leaves zero trace, and never leaks your thoughts.
             </p>
             <div className="pt-4">
-              <a
+              <MagneticButton
                 href="/app"
                 onClick={handleTryClick}
                 className="inline-flex items-center gap-3 px-10 py-5 rounded-full text-lg font-semibold text-white bg-[#FF2DA8] hover:bg-[#E02094] transition-all duration-300 shadow-2xl shadow-[#FF2DA8]/35 hover:shadow-[#FF2DA8]/55 hover:-translate-y-1 active:translate-y-0 focus:outline-none focus:ring-2 focus:ring-[#FF2DA8]"
               >
                 <span>Launch AIVARION Workspace</span>
                 <ArrowRight className="w-6 h-6" />
-              </a>
+              </MagneticButton>
             </div>
           </div>
         </section>
