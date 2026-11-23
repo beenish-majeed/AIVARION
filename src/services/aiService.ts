@@ -12,7 +12,11 @@ import {
   DeviceModelStatus,
   InferenceSourceType,
   ChatMessage,
+  ContextTurn,
+  CloudErrorInfo,
 } from '../types';
+
+export type { ContextTurn, CloudErrorInfo };
 
 export interface AIResponseResult {
   text: string;
@@ -81,9 +85,38 @@ export async function checkDeviceModelAvailability(): Promise<DeviceAvailability
   // If no on-device model found
   return {
     status: 'unavailable',
-    engineName: 'None Detected',
-    details: 'On-device Gemini Nano requires Chrome Desktop 139+ with Prompt API enabled.',
+    engineName: 'Chrome Prompt API (Gemini Nano)',
+    details: 'On-device Gemini Nano requires Chrome Desktop 139+ with Prompt API enabled (chrome://flags/#prompt-api-for-gemini-nano).',
   };
+}
+
+// Extract recent turns for explicit user review and approval
+export function extractRecentTurns(
+  messages: ChatMessage[],
+  maxTurns = 4
+): ContextTurn[] {
+  if (!messages || messages.length === 0) return [];
+  return messages.slice(-maxTurns).map((m) => ({
+    id: m.id,
+    role: m.role,
+    content: m.content.trim(),
+  }));
+}
+
+// Assemble prompt from approved context turns and user input
+export function assembleContextPrompt(
+  approvedTurns: ContextTurn[],
+  currentPrompt: string
+): string {
+  if (!approvedTurns || approvedTurns.length === 0) {
+    return currentPrompt.trim();
+  }
+
+  const formattedHistory = approvedTurns
+    .map((m) => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content.trim()}`)
+    .join('\n\n');
+
+  return `Here is the recent conversation context for continuity:\n\n${formattedHistory}\n\nUser: ${currentPrompt.trim()}\n\nAssistant:`;
 }
 
 // Single-turn context formatter: formats recent conversation turns into the prompt
@@ -92,17 +125,98 @@ export function formatConversationContext(
   currentPrompt: string,
   maxTurns = 4
 ): string {
-  if (!messages || messages.length === 0) {
-    return currentPrompt;
+  const turns = extractRecentTurns(messages, maxTurns);
+  return assembleContextPrompt(turns, currentPrompt);
+}
+
+// Classify and diagnose any cloud error with actionable remediation steps
+export function parseCloudError(err: unknown): CloudErrorInfo {
+  const rawError = err instanceof Error ? err.message : String(err);
+  const lower = rawError.toLowerCase();
+
+  if (
+    !isFirebaseConfigured() ||
+    lower.includes('requires firebase api configuration') ||
+    lower.includes('mock_dev_key') ||
+    lower.includes('mock_dev_api_key')
+  ) {
+    return {
+      title: 'Firebase Project Credentials Missing',
+      rawError,
+      fixGuide:
+        'Cloud chat requires active Firebase project configuration. In .env.local, set your real Firebase credentials: VITE_FIREBASE_API_KEY, VITE_FIREBASE_AUTH_DOMAIN, VITE_FIREBASE_PROJECT_ID, VITE_FIREBASE_STORAGE_BUCKET, VITE_FIREBASE_MESSAGING_SENDER_ID, and VITE_FIREBASE_APP_ID. Restart the dev server after updating .env.local.',
+      errorCategory: 'no_config',
+    };
   }
 
-  // Take the most recent turns excluding welcome message if too long
-  const recent = messages.slice(-maxTurns);
-  const formattedHistory = recent
-    .map((m) => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content.trim()}`)
-    .join('\n\n');
+  if (
+    lower.includes('appcheck') ||
+    lower.includes('app-check') ||
+    lower.includes('recaptcha') ||
+    lower.includes('app check')
+  ) {
+    return {
+      title: 'Firebase App Check Verification Failed',
+      rawError,
+      fixGuide:
+        'Firebase App Check rejected the request. Ensure you have registered your debug token in the Firebase Console (Firebase Console -> App Check -> Apps -> Manage debug tokens), or configured VITE_FIREBASE_APP_CHECK_DEBUG_TOKEN in .env.local.',
+      errorCategory: 'app_check',
+    };
+  }
 
-  return `Here is the recent conversation context for continuity:\n\n${formattedHistory}\n\nUser: ${currentPrompt.trim()}\n\nAssistant:`;
+  if (
+    lower.includes('network') ||
+    lower.includes('failed to fetch') ||
+    lower.includes('offline') ||
+    (typeof navigator !== 'undefined' && !navigator.onLine)
+  ) {
+    return {
+      title: 'Network / Offline Connection Failure',
+      rawError,
+      fixGuide:
+        'Unable to reach cloud servers. Check your internet connection. In offline environments, switch to Private Local mode for zero-network on-device computation.',
+      errorCategory: 'network',
+    };
+  }
+
+  if (
+    lower.includes('api_key_invalid') ||
+    lower.includes('api key not valid') ||
+    lower.includes('permission_denied') ||
+    lower.includes('unauthenticated') ||
+    lower.includes('401') ||
+    lower.includes('403')
+  ) {
+    return {
+      title: 'Firebase Authentication or API Permission Denied',
+      rawError,
+      fixGuide:
+        'Google Cloud rejected the API request. Verify that your VITE_FIREBASE_API_KEY is active and that the Gemini API / Firebase AI Logic is enabled for your Google Cloud project in the Google Cloud Console.',
+      errorCategory: 'auth_permission',
+    };
+  }
+
+  if (
+    lower.includes('resource_exhausted') ||
+    lower.includes('quota') ||
+    lower.includes('429')
+  ) {
+    return {
+      title: 'API Quota Exceeded',
+      rawError,
+      fixGuide:
+        'The cloud AI request hit Google Cloud / Gemini rate limits or quota. Wait a few moments or upgrade your project quota in Google Cloud Console.',
+      errorCategory: 'quota',
+    };
+  }
+
+  return {
+    title: 'Cloud Inference Error',
+    rawError,
+    fixGuide:
+      'The cloud model request could not be completed. Check browser console logs and verify Firebase AI Logic service status in Firebase Console.',
+    errorCategory: 'unknown',
+  };
 }
 
 // On-device direct inference executor

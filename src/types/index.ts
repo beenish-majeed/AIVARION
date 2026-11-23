@@ -4,6 +4,19 @@ export type InferenceSourceType = 'on_device' | 'in_cloud';
 
 export type DeviceModelStatus = 'unavailable' | 'downloading' | 'ready';
 
+export interface ContextTurn {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+export interface CloudErrorInfo {
+  title: string;
+  rawError: string;
+  fixGuide: string;
+  errorCategory: 'no_config' | 'app_check' | 'network' | 'auth_permission' | 'quota' | 'unknown';
+}
+
 export interface ChatMessage {
   id: string;
   conversationId: string;
