@@ -79,7 +79,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
         {/* Confident, Large Headline matching Gladeye-inspired bold typography */}
         <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight text-white max-w-5xl mx-auto font-display leading-[1.04]">
           Intelligence Stays <br />
-          <span className="bg-gradient-to-r from-white via-zinc-200 to-[#FF2DA8] bg-clip-text text-transparent">
+          <span className="kinetic-gradient-text">
             On Your Machine.
           </span>
         </h1>

@@ -85,6 +85,61 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
         {/* 3D Orbit Hero Section */}
         <HeroSection onNavigate={onNavigate} />
 
+        {/* Kinetic Typography Marquee Ticker */}
+        <div className="py-3.5 border-y border-zinc-900 bg-black/60 overflow-hidden relative select-none">
+          <div className="kinetic-marquee-track text-xs font-mono tracking-widest uppercase text-zinc-400">
+            <span className="mx-6 flex items-center gap-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#FF2DA8]" />
+              <span>100% On-Device Inference</span>
+            </span>
+            <span className="mx-6 flex items-center gap-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#D4FF3F]" />
+              <span>Zero Cloud Surveillance</span>
+            </span>
+            <span className="mx-6 flex items-center gap-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#FF2DA8]" />
+              <span>Deterministic Python Skill Coach</span>
+            </span>
+            <span className="mx-6 flex items-center gap-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#D4FF3F]" />
+              <span>Client-Encrypted IndexedDB Notes</span>
+            </span>
+            <span className="mx-6 flex items-center gap-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#FF2DA8]" />
+              <span>Dual Human Approval Gates</span>
+            </span>
+            <span className="mx-6 flex items-center gap-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#D4FF3F]" />
+              <span>Zod Schema Validated</span>
+            </span>
+            {/* Duplicated for seamless continuous marquee loop */}
+            <span className="mx-6 flex items-center gap-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#FF2DA8]" />
+              <span>100% On-Device Inference</span>
+            </span>
+            <span className="mx-6 flex items-center gap-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#D4FF3F]" />
+              <span>Zero Cloud Surveillance</span>
+            </span>
+            <span className="mx-6 flex items-center gap-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#FF2DA8]" />
+              <span>Deterministic Python Skill Coach</span>
+            </span>
+            <span className="mx-6 flex items-center gap-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#D4FF3F]" />
+              <span>Client-Encrypted IndexedDB Notes</span>
+            </span>
+            <span className="mx-6 flex items-center gap-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#FF2DA8]" />
+              <span>Dual Human Approval Gates</span>
+            </span>
+            <span className="mx-6 flex items-center gap-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#D4FF3F]" />
+              <span>Zod Schema Validated</span>
+            </span>
+          </div>
+        </div>
+
         {/* 4-Step Interactive Sequence */}
         <HowItWorksSection />
 
@@ -97,7 +152,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                 <span>Private Architecture Modules</span>
               </div>
               <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-white font-display">
-                Four Workspaces. Zero Surveillance.
+                Four Workspaces. <span className="kinetic-gradient-text">Zero Surveillance.</span>
               </h2>
               <p className="text-zinc-400 text-base sm:text-lg">
                 Engineered to replace opaque cloud chat apps with deterministic local storage, offline AI, and human-gated cloud workflows.
@@ -316,7 +371,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
         <section className="py-28 px-4 sm:px-6 lg:px-8 border-t border-zinc-900 bg-gradient-to-b from-[#0B0B0B] via-[#140610] to-[#0B0B0B] relative overflow-hidden">
           <div className="max-w-4xl mx-auto text-center relative z-10 space-y-8 glass-surface p-10 sm:p-16 rounded-3xl">
             <h2 className="text-4xl sm:text-6xl font-bold text-white font-display tracking-tight">
-              Ready to Own Your Intelligence?
+              Ready to <span className="kinetic-gradient-text">Own Your Intelligence?</span>
             </h2>
             <p className="text-zinc-300 text-lg sm:text-xl max-w-xl mx-auto">
               Launch your private local AI workspace right now. Works offline, leaves zero trace, and never leaks your thoughts.

@@ -103,3 +103,54 @@ body {
 .glow-chartreuse-sm {
   box-shadow: 0 0 12px -2px rgba(212, 255, 63, 0.5);
 }
+
+/* Kinetic Typography */
+@keyframes textShimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.kinetic-gradient-text {
+  background: linear-gradient(90deg, #FFFFFF 0%, #F4F4F5 20%, #FF2DA8 50%, #F4F4F5 80%, #FFFFFF 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: textShimmer 7s ease-in-out infinite;
+}
+
+@keyframes marqueeScroll {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.kinetic-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marqueeScroll 28s linear infinite;
+}
+
+.kinetic-marquee-track:hover {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kinetic-gradient-text {
+    animation: none;
+    color: #FFFFFF;
+  }
+  .kinetic-marquee-track {
+    animation: none;
+  }
+}
