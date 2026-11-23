@@ -12,6 +12,8 @@ interface HeroSectionProps {
 
 export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
   const heroRef = useRef<HTMLElement>(null);
+  const showcaseContainerRef = useRef<HTMLDivElement>(null);
+  const ambientGlowRef = useRef<HTMLDivElement>(null);
   const [isOffscreen, setIsOffscreen] = useState(false);
   const [useStaticFallback, setUseStaticFallback] = useState(false);
 
@@ -44,9 +46,59 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
       observer.observe(heroRef.current);
     }
 
+    // 4. Hero pointer and scroll response dynamics
+    let animId: number;
+    let targetX = 0;
+    let targetY = 0;
+    let currentX = 0;
+    let currentY = 0;
+    let scrollY = 0;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (motionQuery.matches) return;
+      const { innerWidth, innerHeight } = window;
+      targetX = (e.clientX / innerWidth - 0.5) * 2;
+      targetY = (e.clientY / innerHeight - 0.5) * 2;
+    };
+
+    const handleScroll = () => {
+      scrollY = window.scrollY;
+    };
+
+    const updateFrame = () => {
+      currentX += (targetX - currentX) * 0.08;
+      currentY += (targetY - currentY) * 0.08;
+
+      if (showcaseContainerRef.current && !motionQuery.matches) {
+        const tiltX = -currentY * 3.5;
+        const tiltY = currentX * 4.5;
+        const panX = currentX * 8;
+        const panY = currentY * 6;
+        const scrollFactor = Math.min(1, scrollY / 650);
+        const scale = 1 - scrollFactor * 0.04;
+        const opacity = Math.max(0.45, 1 - scrollFactor * 0.65);
+
+        showcaseContainerRef.current.style.transform = `perspective(1000px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) translate3d(${panX}px, ${panY}px, 0) scale(${scale})`;
+        showcaseContainerRef.current.style.opacity = `${opacity}`;
+      }
+
+      if (ambientGlowRef.current && !motionQuery.matches) {
+        ambientGlowRef.current.style.transform = `translate3d(calc(-50% + ${currentX * 28}px), calc(-50% + ${currentY * 22}px), 0)`;
+      }
+
+      animId = requestAnimationFrame(updateFrame);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    animId = requestAnimationFrame(updateFrame);
+
     return () => {
       motionQuery.removeEventListener('change', checkMotionPreference);
       observer.disconnect();
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('scroll', handleScroll);
+      cancelAnimationFrame(animId);
     };
   }, []);
 
@@ -68,7 +120,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
       <ParticleBackground />
 
       {/* Background radial ambient glows */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-[#FF2DA8]/12 rounded-full blur-[150px] pointer-events-none" />
+      <div
+        ref={ambientGlowRef}
+        className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-[#FF2DA8]/12 rounded-full blur-[150px] pointer-events-none transition-transform duration-200 ease-out"
+      />
       <div className="absolute bottom-1/3 right-1/4 w-[400px] h-[400px] bg-[#D4FF3F]/5 rounded-full blur-[130px] pointer-events-none" />
 
       <div className="relative max-w-6xl mx-auto text-center z-10 space-y-8">
@@ -114,7 +169,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
         </div>
 
         {/* 3D Visual Centerpiece or Static Fallback Container */}
-        <div className="relative mt-8 mx-auto max-w-3xl rounded-2xl p-1 bg-gradient-to-b from-zinc-700/40 via-zinc-900/30 to-transparent">
+        <div
+          ref={showcaseContainerRef}
+          className="relative mt-8 mx-auto max-w-3xl rounded-2xl p-1 bg-gradient-to-b from-zinc-700/40 via-zinc-900/30 to-transparent will-change-transform"
+        >
           <div className="relative rounded-xl overflow-hidden bg-[#0D0D0E] border border-zinc-800/80 shadow-2xl p-4 sm:p-6">
             <div className="flex items-center justify-between pb-4 border-b border-zinc-800/80">
               <div className="flex items-center gap-3">

@@ -72,45 +72,49 @@ const CoreRingMesh: React.FC<SceneObjectProps> = ({ isPaused }) => {
   useFrame((state, delta) => {
     if (isPaused) return;
 
-    // Smooth lerp mouse tracking
-    mouse.current.x += (mouse.current.targetX - mouse.current.x) * 0.05;
-    mouse.current.y += (mouse.current.targetY - mouse.current.y) * 0.05;
+    // Smooth lerp mouse tracking with refined organic damping
+    mouse.current.x += (mouse.current.targetX - mouse.current.x) * 0.08;
+    mouse.current.y += (mouse.current.targetY - mouse.current.y) * 0.08;
 
     // Smooth lerp scroll tracking
     scrollOffset.current.current +=
-      (scrollOffset.current.target - scrollOffset.current.current) * 0.06;
+      (scrollOffset.current.target - scrollOffset.current.current) * 0.07;
     const scrollFactor = scrollOffset.current.current * 0.002;
 
     const time = state.clock.getElapsedTime();
 
     if (groupRef.current) {
-      groupRef.current.rotation.y = scrollFactor * 0.7;
-      groupRef.current.position.y = -Math.min(1.2, scrollFactor * 0.5);
-      groupRef.current.rotation.z = Math.sin(scrollFactor * 0.5) * 0.12;
+      // Coordinated 3D tilt and depth recession on pointer and scroll
+      groupRef.current.rotation.x = -scrollFactor * 0.45 + mouse.current.y * 0.25;
+      groupRef.current.rotation.y = scrollFactor * 0.75 + mouse.current.x * 0.35;
+      groupRef.current.rotation.z = Math.sin(scrollFactor * 0.4) * 0.15;
+      groupRef.current.position.y = -Math.min(1.4, scrollFactor * 0.6);
+      groupRef.current.position.z = -Math.min(1.8, scrollFactor * 0.85);
     }
 
     if (outerRingRef.current) {
-      outerRingRef.current.rotation.x = Math.sin(time * 0.4) * 0.25 + mouse.current.y * 0.4 + scrollFactor * 0.4;
-      outerRingRef.current.rotation.y = time * 0.35 + mouse.current.x * 0.5 + scrollFactor * 0.6;
+      outerRingRef.current.rotation.x = Math.sin(time * 0.4) * 0.25 + mouse.current.y * 0.45 + scrollFactor * 0.4;
+      outerRingRef.current.rotation.y = time * 0.38 + mouse.current.x * 0.55 + scrollFactor * 0.6;
       outerRingRef.current.rotation.z = Math.cos(time * 0.3) * 0.15;
-      const ringScale = 1 + Math.min(0.18, scrollFactor * 0.08);
+      const ringScale = 1 + Math.min(0.2, scrollFactor * 0.1);
       outerRingRef.current.scale.set(ringScale, ringScale, ringScale);
     }
 
     if (innerRingRef.current) {
-      innerRingRef.current.rotation.x = -Math.sin(time * 0.3) * 0.2 - mouse.current.y * 0.3 - scrollFactor * 0.5;
-      innerRingRef.current.rotation.y = -time * 0.25 - mouse.current.x * 0.4 - scrollFactor * 0.4;
+      innerRingRef.current.rotation.x = -Math.sin(time * 0.3) * 0.22 - mouse.current.y * 0.35 - scrollFactor * 0.5;
+      innerRingRef.current.rotation.y = -time * 0.28 - mouse.current.x * 0.45 - scrollFactor * 0.45;
       innerRingRef.current.rotation.z = Math.sin(time * 0.4) * 0.2;
     }
 
     if (coreRef.current) {
-      coreRef.current.rotation.y = time * 0.2 + scrollFactor * 0.3;
-      const pulse = 1 + Math.sin(time * 2) * 0.03;
+      coreRef.current.rotation.y = time * 0.22 + scrollFactor * 0.35;
+      const pulse = 1 + Math.sin(time * 2) * 0.035;
       coreRef.current.scale.set(pulse, pulse, pulse);
     }
 
     if (glowLightRef.current) {
-      glowLightRef.current.intensity = 1.8 + Math.sin(time * 3) * 0.4 + Math.min(1.0, scrollFactor);
+      const mouseDist = Math.sqrt(mouse.current.x * mouse.current.x + mouse.current.y * mouse.current.y);
+      glowLightRef.current.intensity = 1.8 + Math.sin(time * 3) * 0.4 + Math.min(1.1, scrollFactor) + mouseDist * 0.45;
     }
   });
 
