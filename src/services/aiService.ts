@@ -135,10 +135,12 @@ export function parseCloudError(err: unknown): CloudErrorInfo {
   const lower = rawError.toLowerCase();
 
   if (
-    !isFirebaseConfigured() ||
     lower.includes('requires firebase api configuration') ||
     lower.includes('mock_dev_key') ||
-    lower.includes('mock_dev_api_key')
+    lower.includes('mock_dev_api_key') ||
+    lower.includes('credentials missing') ||
+    lower.includes('configure your firebase project credentials') ||
+    lower.includes('project credentials in .env.local')
   ) {
     return {
       title: 'Firebase Project Credentials Missing',
@@ -207,6 +209,16 @@ export function parseCloudError(err: unknown): CloudErrorInfo {
       fixGuide:
         'The cloud AI request hit Google Cloud / Gemini rate limits or quota. Wait a few moments or upgrade your project quota in Google Cloud Console.',
       errorCategory: 'quota',
+    };
+  }
+
+  if (!isFirebaseConfigured()) {
+    return {
+      title: 'Firebase Project Credentials Missing',
+      rawError,
+      fixGuide:
+        'Cloud chat requires active Firebase project configuration. In .env.local, set your real Firebase credentials: VITE_FIREBASE_API_KEY, VITE_FIREBASE_AUTH_DOMAIN, VITE_FIREBASE_PROJECT_ID, VITE_FIREBASE_STORAGE_BUCKET, VITE_FIREBASE_MESSAGING_SENDER_ID, and VITE_FIREBASE_APP_ID. Restart the dev server after updating .env.local.',
+      errorCategory: 'no_config',
     };
   }
 
