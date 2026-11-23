@@ -92,7 +92,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
         <section id="features" className="py-24 sm:py-32 px-4 sm:px-6 lg:px-8 border-t border-zinc-900 bg-[#0E0E10]">
           <div className="max-w-7xl mx-auto">
             <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-xs font-medium text-zinc-300">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-badge text-xs font-medium text-zinc-300">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#D4FF3F]" />
                 <span>Private Architecture Modules</span>
               </div>
@@ -106,7 +106,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Feature 1: Private Chat */}
-              <div className="reveal-card p-8 rounded-2xl bg-zinc-900/40 border border-zinc-800 hover:border-[#FF2DA8]/30 transition-all duration-300 flex flex-col justify-between">
+              <div className="reveal-card glass-surface glass-surface-interactive rounded-2xl p-8 flex flex-col justify-between">
                 <div>
                   <div className="w-12 h-12 rounded-xl bg-[#FF2DA8]/10 border border-[#FF2DA8]/30 flex items-center justify-center text-[#FF2DA8] mb-6">
                     <Sparkles className="w-6 h-6" />
@@ -126,9 +126,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
               </div>
 
               {/* Feature 2: Python Skill Coach */}
-              <div className="reveal-card p-8 rounded-2xl bg-zinc-900/40 border border-zinc-800 hover:border-[#FF2DA8]/30 transition-all duration-300 flex flex-col justify-between">
+              <div className="reveal-card glass-surface glass-surface-interactive rounded-2xl p-8 flex flex-col justify-between">
                 <div>
-                  <div className="w-12 h-12 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-white mb-6">
+                  <div className="w-12 h-12 rounded-xl bg-zinc-800/80 border border-zinc-700/80 flex items-center justify-center text-white mb-6">
                     <GraduationCap className="w-6 h-6" />
                   </div>
                   <h3 className="text-2xl font-bold text-white mb-3">Python Skill Coach</h3>
@@ -146,9 +146,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
               </div>
 
               {/* Feature 3: Personal Notes */}
-              <div className="reveal-card p-8 rounded-2xl bg-zinc-900/40 border border-zinc-800 hover:border-[#FF2DA8]/30 transition-all duration-300 flex flex-col justify-between">
+              <div className="reveal-card glass-surface glass-surface-interactive rounded-2xl p-8 flex flex-col justify-between">
                 <div>
-                  <div className="w-12 h-12 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-white mb-6">
+                  <div className="w-12 h-12 rounded-xl bg-zinc-800/80 border border-zinc-700/80 flex items-center justify-center text-white mb-6">
                     <FileText className="w-6 h-6" />
                   </div>
                   <h3 className="text-2xl font-bold text-white mb-3">Offline Personal Notes</h3>
@@ -166,7 +166,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
               </div>
 
               {/* Feature 4: Cloud 7-Day Study Planner */}
-              <div className="reveal-card p-8 rounded-2xl bg-zinc-900/40 border border-zinc-800 hover:border-[#FF2DA8]/30 transition-all duration-300 flex flex-col justify-between">
+              <div className="reveal-card glass-surface glass-surface-interactive rounded-2xl p-8 flex flex-col justify-between">
                 <div>
                   <div className="w-12 h-12 rounded-xl bg-[#FF2DA8]/10 border border-[#FF2DA8]/30 flex items-center justify-center text-[#FF2DA8] mb-6">
                     <CloudLightning className="w-6 h-6" />
@@ -202,7 +202,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Private Local */}
-              <div className="reveal-card p-7 rounded-2xl bg-zinc-900/50 border-2 border-[#FF2DA8]/40 relative flex flex-col justify-between">
+              <div className="reveal-card glass-surface glass-surface-interactive glass-surface-active rounded-2xl p-7 relative flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <span className="px-2.5 py-1 rounded-full bg-[#FF2DA8]/15 text-[#FF2DA8] text-xs font-semibold">
@@ -215,17 +215,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                     Uses on-device inference only. Throws if the local model is unavailable. Guaranteed never to make cloud calls or fall back silently.
                   </p>
                 </div>
-                <div className="pt-4 border-t border-zinc-800 text-xs font-mono text-zinc-400 flex items-center justify-between">
+                <div className="pt-4 border-t border-zinc-800/80 text-xs font-mono text-zinc-400 flex items-center justify-between">
                   <span>Firebase AI Logic</span>
                   <span className="text-[#FF2DA8]">ONLY_ON_DEVICE</span>
                 </div>
               </div>
 
               {/* Hybrid Auto */}
-              <div className="reveal-card p-7 rounded-2xl bg-zinc-900/50 border border-zinc-800 hover:border-zinc-700 relative flex flex-col justify-between">
+              <div className="reveal-card glass-surface glass-surface-interactive rounded-2xl p-7 relative flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <span className="px-2.5 py-1 rounded-full bg-zinc-800 text-zinc-300 text-xs font-semibold">
+                    <span className="px-2.5 py-1 rounded-full glass-badge text-zinc-300 text-xs font-semibold">
                       Local-First Fallback
                     </span>
                     <Sparkles className="w-4 h-4 text-[#D4FF3F]" />
@@ -235,17 +235,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                     Attempts local inference first. If unavailable, sanitizes payload and halts until you approve transmission before executing cloud inference.
                   </p>
                 </div>
-                <div className="pt-4 border-t border-zinc-800 text-xs font-mono text-zinc-400 flex items-center justify-between">
+                <div className="pt-4 border-t border-zinc-800/80 text-xs font-mono text-zinc-400 flex items-center justify-between">
                   <span>Approval Gate</span>
                   <span className="text-[#D4FF3F]">PREFER_ON_DEVICE</span>
                 </div>
               </div>
 
               {/* Cloud Guarded */}
-              <div className="reveal-card p-7 rounded-2xl bg-zinc-900/50 border border-zinc-800 hover:border-zinc-700 relative flex flex-col justify-between">
+              <div className="reveal-card glass-surface glass-surface-interactive rounded-2xl p-7 relative flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <span className="px-2.5 py-1 rounded-full bg-zinc-800 text-zinc-300 text-xs font-semibold">
+                    <span className="px-2.5 py-1 rounded-full glass-badge text-zinc-300 text-xs font-semibold">
                       Explicit Cloud
                     </span>
                     <CloudLightning className="w-4 h-4 text-zinc-400" />
@@ -255,7 +255,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                     Reserved exclusively for complex 7-day study planning tasks after deterministic PII removal and explicit payload inspection.
                   </p>
                 </div>
-                <div className="pt-4 border-t border-zinc-800 text-xs font-mono text-zinc-400 flex items-center justify-between">
+                <div className="pt-4 border-t border-zinc-800/80 text-xs font-mono text-zinc-400 flex items-center justify-between">
                   <span>Sanitized Preview</span>
                   <span className="text-zinc-300">ONLY_IN_CLOUD</span>
                 </div>
@@ -266,7 +266,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
 
         {/* Section: Call to Action */}
         <section className="py-28 px-4 sm:px-6 lg:px-8 border-t border-zinc-900 bg-gradient-to-b from-[#0B0B0B] via-[#140610] to-[#0B0B0B] relative overflow-hidden">
-          <div className="max-w-4xl mx-auto text-center relative z-10 space-y-8">
+          <div className="max-w-4xl mx-auto text-center relative z-10 space-y-8 glass-surface p-10 sm:p-16 rounded-3xl">
             <h2 className="text-4xl sm:text-6xl font-bold text-white font-display tracking-tight">
               Ready to Own Your Intelligence?
             </h2>
