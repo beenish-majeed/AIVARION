@@ -44,13 +44,18 @@ AIVARION is engineered on a strict **local-first** paradigm. User data, chats, p
 
 ## 2. Exact File Paths for Firebase AI Logic
 
-Cloud and hybrid inference integration points are isolated to:
+Cloud and hybrid inference integration points follow official Firebase documentation ([Get Started](https://firebase.google.com/docs/ai-logic/hybrid/web/get-started) and [Configuration Options](https://firebase.google.com/docs/ai-logic/hybrid/web/configuration-options)):
 
+- `src/firebase/config.ts`:
+  - `getAI(app, { backend: new GoogleAIBackend() })`: Initializes Firebase AI Logic service.
+  - `initializeAppCheck(app, { provider, isTokenAutoRefreshEnabled: true })`: Enforces App Check tokens.
+  - `signInAnonymously(auth)`: Authenticates user session for Firestore access.
 - `src/services/aiService.ts`:
   - `checkDeviceModelAvailability()`: Probes hardware capabilities via Chrome Prompt API (`window.ai.languageModel.capabilities`) or Firebase AI Logic `InferenceMode.ONLY_ON_DEVICE`.
-  - `executeOnDeviceInference()`: Runs on-device inference using `ONLY_ON_DEVICE`.
-  - `executeCloudInference()`: Runs cloud inference using `ONLY_IN_CLOUD`.
-  - Reads `result.response.inferenceSource` (`'on_device'` vs `'in_cloud'`) to display transparent badges in the UI.
+  - `executeOnDeviceInference()`: Runs on-device inference using `InferenceMode.ONLY_ON_DEVICE`.
+  - `executeCloudInference()`: Runs cloud inference using `InferenceMode.ONLY_IN_CLOUD` with `inCloudParams: { model: 'gemini-1.5-flash' }`.
+  - Reads `result.response.inferenceSource` (`'on_device'` vs `'in_cloud'`) from SDK metadata to display transparent badges in the UI.
+  - `parseCloudError()`: Structured classifier diagnosing missing `.env.local` keys, App Check rejections, or network outages without faking replies.
 - `src/services/privacyRouter.ts`:
   - Enforces mode boundaries. In `private_local` mode, throws immediately if local inference is absent, prohibiting silent cloud routing.
 - `src/services/studyPlanService.ts`:
@@ -118,7 +123,21 @@ Navigate to `http://localhost:5173`.
 
 ---
 
-## 5. Security & App Check
+## 5. Security, App Check & Content Security Policy
+
+### Content Security Policy (CSP)
+Configured via `<meta http-equiv="Content-Security-Policy">` in `index.html`:
+```http
+default-src 'self';
+script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://www.google.com https://www.gstatic.com;
+connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://*.google.com blob: data:;
+style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+font-src 'self' https://fonts.gstatic.com data:;
+img-src 'self' data: blob: https:;
+frame-src 'self' https://www.google.com https://recaptcha.google.com;
+worker-src 'self' blob:;
+```
+This policy allows Firebase AI Logic endpoints, Cloud Firestore WebSocket/REST channels, Google App Check (reCAPTCHA v3 & Enterprise), Google Fonts, and offline Service Workers while forbidding external tracking, third-party analytics, and unauthorized script injection.
 
 ### Cloud Firestore Security Rules
 Located at `firestore.rules`:
@@ -154,20 +173,35 @@ App Check defends your backend against abuse:
 
 ---
 
-## 7. Automated Testing & Production Build
+## 7. Automated Testing & Verification Matrix
 
 ### Running Test Suite
 Execute the Vitest test suite:
 ```bash
 npm run test
 ```
-**Test Coverage:**
-- `src/test/brand.test.tsx`: Brand identity, logo assets, navigation routes.
-- `src/test/landing.test.tsx`: 4-step privacy sequence, 3D WebGL fallbacks, mobile layout.
-- `src/test/chat-db.test.tsx`: Dexie IndexedDB CRUD, single-turn context formatting, private local enforcement.
-- `src/test/quiz-privacy.test.tsx`: Zod schemas, deterministic code grading, PII sanitizer regex, offline notes.
-- `src/test/plan-firestore.test.tsx`: Gate 1 sanitization, 7-day curriculum validation, Gate 2 task creation, offline pending requests.
-- `src/test/e2e-security.test.tsx`: End-to-end security invariants, offline queueing, Firestore rules contract.
+**Results (100% Passing - 47 tests across 7 test suites):**
+- `src/test/brand.test.tsx` (3 tests): Brand identity, logo assets, navigation routes.
+- `src/test/landing.test.tsx` (4 tests): 4-step privacy sequence, 3D WebGL fallbacks, mobile layout.
+- `src/test/chat-db.test.tsx` (5 tests): Dexie IndexedDB CRUD, single-turn context formatting, private local enforcement.
+- `src/test/quiz-privacy.test.tsx` (9 tests): Zod schemas, deterministic code grading, PII sanitizer regex, offline notes.
+- `src/test/plan-firestore.test.tsx` (5 tests): Gate 1 sanitization, 7-day curriculum validation, Gate 2 task creation, offline pending requests.
+- `src/test/e2e-security.test.tsx` (10 tests): End-to-end security invariants, offline queueing, Firestore rules contract.
+- `src/test/chat-modes-e2e.test.tsx` (11 tests): Non-dead-end unavailable status, cloud approval gate, selective context turns, SDK inference source badge, and real error diagnostics.
+
+### Tested vs. Untested Matrix
+| Component / Flow | Status | Verification Details |
+|---|---|---|
+| Privacy Router & Modes | Tested | 100% covered across unit and security suites (`e2e-security.test.tsx`, `quiz-privacy.test.tsx`) |
+| Deterministic PII Sanitizer | Tested | Regex-tested for emails, phone numbers, and custom private entities |
+| Deterministic Code Grading | Tested | Evaluated with strict equality (`===`) in `quizService.ts` |
+| Zod Schema Validation | Tested | Enforced on quiz questions and study plan payloads |
+| Dexie IndexedDB Storage | Tested | CRUD for conversations, messages, notes, and pending offline requests |
+| Dual Human Approval Gates | Tested | Gate 1 payload preview modal and Gate 2 Firestore write approval |
+| Motion Landing Page & Effects | Tested | Glassmorphism, Bento grid, kinetic typography, magnetic cursor, 3D orbit |
+| PWA Caching & Bundle Splitting | Tested | Service worker generated (`dist/sw.js`), vendor chunks isolated under 1 MB |
+| Real Cloud Live Inference | Untested | Awaits user's live Firebase credentials in `.env.local` |
+| Physical On-Device Model | Untested | Awaits user's physical Chrome 139+ browser with Gemini Nano component loaded |
 
 ### Production Build
 ```bash

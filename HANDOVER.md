@@ -24,9 +24,9 @@ AIVARION is a complete, production-grade web application and landing page implem
 ## 2. Test Execution Summary
 
 Executed via Vitest (`npm run test`) with zero skipped tests:
-- **Total Test Suites:** 6 / 6 passed (100%)
-- **Total Unit & E2E Tests:** 36 / 36 passed (100%)
-- **Duration:** 9.73s
+- **Total Test Suites:** 7 / 7 passed (100%)
+- **Total Unit & E2E Tests:** 47 / 47 passed (100%)
+- **Duration:** 7.64s
 
 ```
 Test Suites:
@@ -36,6 +36,7 @@ Test Suites:
 ✓ src/test/quiz-privacy.test.tsx (9 tests)
 ✓ src/test/plan-firestore.test.tsx (5 tests)
 ✓ src/test/e2e-security.test.tsx (10 tests)
+✓ src/test/chat-modes-e2e.test.tsx (11 tests)
 ```
 
 ---
@@ -46,9 +47,12 @@ Executed via `npm run build` (`tsc -b && vite build`):
 - **TypeScript Check:** 0 errors
 - **PWA Service Worker:** Generated via `vite-plugin-pwa` precaching all shell assets (`dist/sw.js`, `dist/workbox-*.js`)
 - **Code-Splitting Verification:**
-  - 3D WebGL chunk (`Hero3DScene-*.js`): 250.42 kB gzipped (isolated, loads asynchronously only when 3D hero is requested).
-  - Main Application bundle (`index-*.js`): 357.62 kB gzipped.
-  - CSS bundle (`index-*.css`): 6.71 kB gzipped.
+  - Vendor Firebase bundle (`vendor-firebase-*.js`): 578.30 kB (146.79 kB gzip)
+  - Vendor React bundle (`vendor-react-*.js`): 12.58 kB (4.42 kB gzip)
+  - Main App bundle (`index-*.js`): 678.78 kB (212.60 kB gzip)
+  - 3D WebGL lazy chunk (`Hero3DScene-*.js`): 934.95 kB (250.65 kB gzip)
+  - CSS bundle (`index-*.css`): 42.29 kB (7.73 kB gzip)
+  - Zero chunk warnings, initial landing page load well under 1 MB.
 
 ---
 
