@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { ArrowRight, Lock, Sparkles, Cpu } from 'lucide-react';
 import logoImg from '../../assets/aivarion-logo.png';
+import { ParticleBackground } from './ParticleBackground';
 
 // Lazy-load the heavy 3D WebGL bundle
 const Hero3DScene = lazy(() => import('./Hero3DScene'));
@@ -63,6 +64,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
       ref={heroRef}
       className="relative min-h-[95vh] flex items-center justify-center pt-28 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden bg-[#0B0B0B]"
     >
+      {/* Interactive Micro-Particle Field */}
+      <ParticleBackground />
+
       {/* Background radial ambient glows */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-[#FF2DA8]/12 rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute bottom-1/3 right-1/4 w-[400px] h-[400px] bg-[#D4FF3F]/5 rounded-full blur-[130px] pointer-events-none" />
