@@ -37,12 +37,12 @@ export const ParticleBackground: React.FC = () => {
 
     window.addEventListener('resize', handleResize);
 
-    // Particle colors adhering strictly to brand palette: white, hot pink, and very rare chartreuse
+    // Particle colors adhering strictly to brand palette: white, neutral grey, and hot pink
     const brandColors = [
       'rgba(255, 255, 255, 0.35)',
       'rgba(255, 45, 168, 0.45)',
       'rgba(255, 45, 168, 0.25)',
-      'rgba(212, 255, 63, 0.25)',
+      'rgba(244, 244, 245, 0.2)',
     ];
 
     const particleCount = Math.min(55, Math.floor((width * height) / 22000));
