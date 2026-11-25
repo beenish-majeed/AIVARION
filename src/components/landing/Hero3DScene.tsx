@@ -58,11 +58,11 @@ const CoreRingMesh: React.FC<SceneObjectProps> = ({ isPaused }) => {
     });
   }, []);
 
-  // Subtle Chartreuse core accent
-  const chartreuseMaterial = useMemo(() => {
+  // Subtle inner core accent
+  const innerCoreMaterial = useMemo(() => {
     return new THREE.MeshStandardMaterial({
-      color: new THREE.Color('#D4FF3F'),
-      emissive: new THREE.Color('#D4FF3F'),
+      color: new THREE.Color('#FF2DA8'),
+      emissive: new THREE.Color('#FF2DA8'),
       emissiveIntensity: 0.8,
       metalness: 0.2,
       roughness: 0.1,
@@ -135,14 +135,14 @@ const CoreRingMesh: React.FC<SceneObjectProps> = ({ isPaused }) => {
         <sphereGeometry args={[1.0, 32, 32]} />
       </mesh>
 
-      {/* Embedded Chartreuse Focus Sphere */}
-      <mesh material={chartreuseMaterial} position={[0, 0, 0]}>
+      {/* Embedded inner core sphere */}
+      <mesh material={innerCoreMaterial} position={[0, 0, 0]}>
         <sphereGeometry args={[0.35, 24, 24]} />
       </mesh>
 
       {/* Lighting setup inside group */}
       <pointLight ref={glowLightRef} color="#FF2DA8" intensity={2} distance={8} />
-      <pointLight color="#D4FF3F" intensity={1.2} distance={4} position={[0, 0, 1]} />
+      <pointLight color="#FF2DA8" intensity={1.2} distance={4} position={[0, 0, 1]} />
     </group>
   );
 };

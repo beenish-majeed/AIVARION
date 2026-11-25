@@ -169,6 +169,24 @@ body {
   animation: liquidWipe 0.75s cubic-bezier(0.76, 0, 0.24, 1) forwards;
 }
 
+/* Responsive Hero Layout: 2-column desktop (>= 900px), stacked (< 900px) */
+@media (min-width: 900px) {
+  .hero-responsive-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.95fr);
+    align-items: center;
+    gap: 3rem;
+  }
+}
+
+@media (max-width: 899px) {
+  .hero-responsive-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+  }
+}
+
 /* Soft Pointer Spotlight (CSS radial gradient driven by --spotlight-x & --spotlight-y) */
 .pointer-spotlight {
   opacity: 0;
