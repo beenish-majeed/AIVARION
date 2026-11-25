@@ -200,7 +200,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                 Four Workspaces. <span className="kinetic-gradient-text">Zero Surveillance.</span>
               </h2>
               <p className="text-zinc-400 text-base sm:text-lg">
-                Engineered to replace opaque cloud chat apps with deterministic local storage, offline AI, and human-gated cloud workflows.
+                Four isolated tools built for complete privacy, offline resilience, and human control.
               </p>
             </div>
 
@@ -219,12 +219,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                   </div>
                   <h3 className="text-2xl font-bold text-white mb-2">Private Local Chat</h3>
                   <p className="text-zinc-400 text-sm leading-relaxed mb-6">
-                    Single-turn on-device inference with conversation history cached in browser IndexedDB. Every reply explicitly displays its runtime SDK source tag.
+                    Runs entirely on your device. Zero telemetry, instant offline replies.
                   </p>
                   {/* Interactive Micro Mockup */}
                   <div className="p-3.5 rounded-xl bg-black/50 border border-zinc-800/80 font-mono text-xs space-y-2 mb-4">
                     <div className="text-zinc-400 flex items-center justify-between">
-                      <span>&gt; prompt: "Explain async IO in Python"</span>
+                      <span>&gt; "Explain async IO in Python"</span>
                       <span className="text-[#FF2DA8] text-[10px]">ON_DEVICE</span>
                     </div>
                     <div className="text-zinc-200 text-[11px] border-l-2 border-[#FF2DA8] pl-2 py-0.5">
@@ -254,7 +254,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                   </div>
                   <h3 className="text-2xl font-bold text-white mb-2">Python Skill Coach</h3>
                   <p className="text-zinc-400 text-sm leading-relaxed mb-6">
-                    Interactive Python practice generated locally on-device. Answers are evaluated deterministically by deterministic code—never hallucinated by an LLM.
+                    Targeted Python exercises graded deterministically by code—never LLM hallucinations.
                   </p>
                   <div className="p-3.5 rounded-xl bg-black/50 border border-zinc-800/80 font-mono text-[11px] text-zinc-300 space-y-1 mb-4">
                     <div className="text-[#FF2DA8]">✓ assert user_answer === correct_index</div>
@@ -283,7 +283,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                   </div>
                   <h3 className="text-2xl font-bold text-white mb-2">Offline Personal Notes</h3>
                   <p className="text-zinc-400 text-sm leading-relaxed mb-6">
-                    Store confidential thoughts and code snippets directly inside your client browser. Notes are never synchronized to the cloud without explicit action.
+                    Client-encrypted notes stored strictly in your browser. Stays on your machine.
                   </p>
                   <div className="p-3.5 rounded-xl bg-black/50 border border-zinc-800/80 font-mono text-[11px] text-zinc-400 flex items-center justify-between mb-4">
                     <span>Index: notes (title, tags, body)</span>
@@ -312,7 +312,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                   </div>
                   <h3 className="text-2xl font-bold text-white mb-2">Guarded 7-Day Study Planner</h3>
                   <p className="text-zinc-400 text-sm leading-relaxed mb-6">
-                    Harness Gemini cloud capabilities exclusively for complex task planning, governed by sanitized preview inspectability and dual approval gates.
+                    Complex study schedules planned with cloud AI only after you inspect and approve every step.
                   </p>
                   <div className="p-3.5 rounded-xl bg-black/50 border border-zinc-800/80 font-mono text-[11px] flex flex-wrap items-center gap-2 text-zinc-300 mb-4">
                     <span className="px-2 py-0.5 rounded bg-zinc-800 text-zinc-400">PII Scrubber</span>
