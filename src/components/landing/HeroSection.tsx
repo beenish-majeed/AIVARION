@@ -227,13 +227,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
               </div>
             }
           >
-            <Suspense
-              fallback={
-                <div className="flex items-center justify-center h-full text-zinc-500 font-mono text-xs">
-                  <span className="animate-pulse">INITIALIZING_3D_CORE...</span>
-                </div>
-              }
-            >
+            <Suspense fallback={null}>
               <Hero3DScene isPaused={isOffscreen} pullProgress={pullProgress} />
             </Suspense>
           </WebGLErrorBoundary>

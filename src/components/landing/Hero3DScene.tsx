@@ -74,9 +74,8 @@ const GlowFieldObjects: React.FC<AbstractGlowFieldProps> = ({ isPaused, pullProg
   const bokehTexture = useMemo(() => createBokehDiscTexture(), []);
   const foregroundBokehTexture = useMemo(() => createForegroundBokehTexture(), []);
 
-  // 1. Layer 1: Midground Crescent Valley Particle Wave (1250 particles)
-  // Forms a sweeping 3D amphitheater/valley dipping low in the center-bottom and wrapping up the sides
-  const waveParticleCount = 1250;
+  // 1. Layer 1: Midground Crescent Valley Particle Wave (1450 particles with dense flank wings)
+  const waveParticleCount = 1450;
   const [wavePositions, waveInitialPos, waveColors] = useMemo(() => {
     const pos = new Float32Array(waveParticleCount * 3);
     const initPos = new Float32Array(waveParticleCount * 3);
@@ -89,8 +88,17 @@ const GlowFieldObjects: React.FC<AbstractGlowFieldProps> = ({ isPaused, pullProg
     const chartreuseColor = new THREE.Color('#D4FF3F');
 
     for (let i = 0; i < waveParticleCount; i++) {
-      const u = Math.random();
-      const x = (u - 0.5) * 9.6; // span across viewport width
+      let x = 0;
+      if (i < 1050) {
+        // Core valley span
+        const u = Math.random();
+        x = (u - 0.5) * 9.6;
+      } else {
+        // Additional dense flank dots on the right and left wings
+        const side = Math.random() > 0.5 ? 1 : -1;
+        x = side * (1.2 + Math.random() * 3.6);
+      }
+
       const z = -12.0 + Math.random() * 16.0; // extended path for 5-6 second forward walking flythrough
 
       // Base crescent / U-shaped valley elevation:
@@ -249,8 +257,14 @@ const GlowFieldObjects: React.FC<AbstractGlowFieldProps> = ({ isPaused, pullProg
           magnetOffsetY = (pdy / pdist) * mFactor * 0.35;
         }
 
-        posAttr.array[idx] = ix + magnetOffsetX;
-        posAttr.array[idx + 1] = iy + wave + magnetOffsetY;
+        // Flank particles on left and right drift gently & slowly during the walk ("move some slowly slowly")
+        const flankSign = ix > 0 ? 1 : -1;
+        const flankDistance = Math.abs(ix);
+        const flankDriftX = flankDistance > 1.0 ? flankSign * pullProgress * 0.95 : 0;
+        const flankSlowDriftY = flankDistance > 1.0 ? Math.sin(time * 0.4 + ix * 0.8) * 0.06 : 0;
+
+        posAttr.array[idx] = ix + magnetOffsetX + flankDriftX;
+        posAttr.array[idx + 1] = iy + wave + magnetOffsetY + flankSlowDriftY;
         posAttr.array[idx + 2] = iz;
       }
       posAttr.needsUpdate = true;
