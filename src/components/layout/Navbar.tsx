@@ -1,6 +1,6 @@
 import React from 'react';
 import { ArrowRight, ShieldCheck } from 'lucide-react';
-import logoImg from '../../assets/aivarion-logo.png';
+import iconImg from '../../assets/aivarion-icon.png';
 
 interface NavbarProps {
   currentPath?: string;
@@ -20,7 +20,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', onNavigate })
   return (
     <header className="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-[#0B0B0B]/80 backdrop-blur-md border-b border-zinc-800/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-        {/* Brand Identity / Logo */}
+        {/* Brand Identity / Header Icon Mark */}
         <a
           href="/"
           onClick={(e) => handleNavClick(e, '/')}
@@ -28,10 +28,13 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', onNavigate })
           aria-label="AIVARION Home"
         >
           <img
-            src={logoImg}
+            src={iconImg}
             alt="AIVARION"
             className="h-9 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
           />
+          <span className="font-bold text-lg tracking-wider text-white font-display hidden sm:inline-block">
+            AIVARION
+          </span>
         </a>
 
         {/* Center Navigation Links (Hidden on small mobile) */}

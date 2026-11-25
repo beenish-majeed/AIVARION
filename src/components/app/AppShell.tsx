@@ -18,6 +18,7 @@ import {
   Lock,
 } from 'lucide-react';
 import logoImg from '../../assets/aivarion-logo.png';
+import iconImg from '../../assets/aivarion-icon.png';
 import {
   Conversation,
   AIMode,
@@ -143,10 +144,11 @@ export const AppShell: React.FC<AppShellProps> = ({
           <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
             <button
               onClick={onNavigateHome}
-              className="flex items-center gap-2 text-left group focus:outline-none"
+              className="flex items-center gap-2.5 text-left group focus:outline-none"
               title="Return to Landing Page"
             >
-              <img src={logoImg} alt="AIVARION" className="h-7 w-auto object-contain" />
+              <img src={iconImg} alt="AIVARION" className="h-7 w-auto object-contain" />
+              <span className="font-bold text-sm tracking-wider text-white font-display">AIVARION</span>
             </button>
             <button
               onClick={onNavigateHome}

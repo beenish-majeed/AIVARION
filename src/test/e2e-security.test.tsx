@@ -11,6 +11,7 @@ import {
   rePrepareFromPending,
 } from '../services/studyPlanService';
 import { UserTaskSchema } from '../schemas';
+import * as aiService from '../services/aiService';
 
 describe('AIVARION Phase 6: E2E Security, Offline Queue & Approval Gates', () => {
   beforeEach(async () => {
@@ -19,6 +20,25 @@ describe('AIVARION Phase 6: E2E Security, Offline Queue & Approval Gates', () =>
     await dbLocal.messages.clear();
     await dbLocal.pendingRequests.clear();
     vi.clearAllMocks();
+
+    // Mock cloud inference during unit tests to prevent unmocked external network calls
+    vi.spyOn(aiService, 'executeCloudInference').mockImplementation(async (prompt: string) => ({
+      text: JSON.stringify({
+        id: `plan_${Date.now()}`,
+        topic: 'Python Roadmap',
+        createdAt: Date.now(),
+        overview: 'A comprehensive 7-day structured roadmap.',
+        days: Array.from({ length: 7 }, (_, i) => ({
+          day: i + 1,
+          title: `Day ${i + 1} Fundamentals`,
+          focus: 'Core concept mastery',
+          tasks: ['Task A', 'Task B'],
+          estimatedHours: 2,
+        })),
+      }),
+      inferenceSource: 'in_cloud',
+      modeUsed: 'cloud',
+    }));
   });
 
   describe('1. Sanitizer Security & Redaction', () => {

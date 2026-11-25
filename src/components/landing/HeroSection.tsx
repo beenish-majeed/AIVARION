@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { ArrowRight, Lock, Sparkles, Cpu } from 'lucide-react';
 import logoImg from '../../assets/aivarion-logo.png';
+import iconImg from '../../assets/aivarion-icon.png';
 import { ParticleBackground } from './ParticleBackground';
 
 // Lazy-load the heavy 3D WebGL bundle
@@ -176,7 +177,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
           <div className="relative rounded-xl overflow-hidden bg-[#0D0D0E] border border-zinc-800/80 shadow-2xl p-4 sm:p-6">
             <div className="flex items-center justify-between pb-4 border-b border-zinc-800/80">
               <div className="flex items-center gap-3">
-                <img src={logoImg} alt="AIVARION" className="h-6 w-auto object-contain" />
+                <img src={iconImg} alt="AIVARION" className="h-6 w-auto object-contain" />
                 <span className="text-xs font-mono text-zinc-400">CORE_ORBIT_ENGINE</span>
               </div>
               <div className="flex items-center gap-2 text-xs text-zinc-400">
