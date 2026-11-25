@@ -26,13 +26,14 @@ export const ParticleBackground: React.FC = () => {
     if (!ctx) return;
 
     let animId: number;
-    let width = (canvas.width = canvas.parentElement?.clientWidth || window.innerWidth);
-    let height = (canvas.height = canvas.parentElement?.clientHeight || window.innerHeight);
+    const margin = 80;
+    let width = (canvas.width = (canvas.parentElement?.clientWidth || window.innerWidth) + margin * 2);
+    let height = (canvas.height = (canvas.parentElement?.clientHeight || window.innerHeight) + margin * 2);
 
     const handleResize = () => {
       if (!canvas) return;
-      width = canvas.width = canvas.parentElement?.clientWidth || window.innerWidth;
-      height = canvas.height = canvas.parentElement?.clientHeight || window.innerHeight;
+      width = canvas.width = (canvas.parentElement?.clientWidth || window.innerWidth) + margin * 2;
+      height = canvas.height = (canvas.parentElement?.clientHeight || window.innerHeight) + margin * 2;
     };
 
     window.addEventListener('resize', handleResize);
@@ -113,7 +114,7 @@ export const ParticleBackground: React.FC = () => {
     <canvas
       ref={canvasRef}
       aria-hidden="true"
-      className="absolute inset-0 w-full h-full pointer-events-none z-0 opacity-70"
+      className="absolute -inset-10 w-[calc(100%+80px)] h-[calc(100%+80px)] pointer-events-none z-0 opacity-70"
     />
   );
 };

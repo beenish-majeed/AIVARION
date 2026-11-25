@@ -1,5 +1,5 @@
 import React, { useRef, useMemo, useEffect } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 
 interface AbstractGlowFieldProps {
@@ -49,18 +49,18 @@ const GlowFieldObjects: React.FC<AbstractGlowFieldProps> = ({ isPaused, pullProg
     };
   }, []);
 
-  // 1. Generate abstract particle field positions
-  const particleCount = 750;
+  // 1. Generate abstract particle field positions extending beyond viewport edges
+  const particleCount = 850;
   const [positions, initialPositions, particleScales] = useMemo(() => {
     const pos = new Float32Array(particleCount * 3);
     const initPos = new Float32Array(particleCount * 3);
     const scales = new Float32Array(particleCount);
 
     for (let i = 0; i < particleCount; i++) {
-      // Cylindrical / disc distribution with gentle 3D depth
-      const radius = 0.5 + Math.pow(Math.random(), 0.7) * 2.8;
+      // Extended cylindrical / disc distribution reaching past all viewport edges
+      const radius = 0.3 + Math.pow(Math.random(), 0.6) * 4.6;
       const theta = Math.random() * Math.PI * 2;
-      const y = (Math.random() - 0.5) * 2.2;
+      const y = (Math.random() - 0.5) * 3.8;
 
       const x = Math.cos(theta) * radius;
       const z = Math.sin(theta) * radius;
@@ -81,16 +81,15 @@ const GlowFieldObjects: React.FC<AbstractGlowFieldProps> = ({ isPaused, pullProg
 
   const pointTexture = useMemo(() => createGlowDotTexture(), []);
 
-  // 2. Abstract soft light streaks (smooth 3D curves)
+  // 2. Abstract soft light streaks extending past viewport edges
   const streakCurves = useMemo(() => {
     const curves = [];
-    // 5 abstract orbital ribbon curves around center
     const configs = [
-      { rx: 2.2, ry: 1.2, rz: 1.8, tiltX: 0.3, tiltY: 0.2, tiltZ: 0.1 },
-      { rx: 1.9, ry: 1.7, rz: 1.3, tiltX: -0.4, tiltY: 0.5, tiltZ: -0.2 },
-      { rx: 2.5, ry: 0.8, rz: 2.1, tiltX: 0.5, tiltY: -0.3, tiltZ: 0.4 },
-      { rx: 1.6, ry: 2.0, rz: 1.5, tiltX: -0.2, tiltY: 0.4, tiltZ: 0.3 },
-      { rx: 2.7, ry: 1.4, rz: 1.9, tiltX: 0.1, tiltY: -0.5, tiltZ: -0.3 },
+      { rx: 3.2, ry: 1.8, rz: 2.6, tiltX: 0.3, tiltY: 0.2, tiltZ: 0.1 },
+      { rx: 2.8, ry: 2.5, rz: 2.0, tiltX: -0.4, tiltY: 0.5, tiltZ: -0.2 },
+      { rx: 3.6, ry: 1.4, rz: 2.9, tiltX: 0.5, tiltY: -0.3, tiltZ: 0.4 },
+      { rx: 2.4, ry: 2.8, rz: 2.2, tiltX: -0.2, tiltY: 0.4, tiltZ: 0.3 },
+      { rx: 3.9, ry: 2.0, rz: 2.7, tiltX: 0.1, tiltY: -0.5, tiltZ: -0.3 },
     ];
 
     for (const c of configs) {
@@ -235,6 +234,34 @@ const GlowFieldObjects: React.FC<AbstractGlowFieldProps> = ({ isPaused, pullProg
   );
 };
 
+// Responsive camera framing for window resize & mobile orientation changes
+const ResponsiveCamera: React.FC = () => {
+  const { camera, size } = useThree();
+
+  useEffect(() => {
+    if (!(camera instanceof THREE.PerspectiveCamera)) return;
+
+    const aspect = size.width / Math.max(1, size.height);
+    if (aspect < 0.8) {
+      // Mobile portrait (390x844 etc)
+      camera.fov = 64;
+      camera.position.z = 6.2;
+    } else if (aspect < 1.3) {
+      // Square or tablet
+      camera.fov = 54;
+      camera.position.z = 5.6;
+    } else {
+      // Desktop / widescreen (1366x768, 1920x1080)
+      camera.fov = 46;
+      camera.position.z = 5.0;
+    }
+    camera.aspect = aspect;
+    camera.updateProjectionMatrix();
+  }, [camera, size]);
+
+  return null;
+};
+
 interface Hero3DSceneProps {
   isPaused?: boolean;
   pullProgress?: number;
@@ -255,11 +282,12 @@ export const Hero3DScene: React.FC<Hero3DSceneProps> = ({ isPaused = false, pull
   return (
     <div ref={containerRef} className="w-full h-full absolute inset-0 pointer-events-none select-none overflow-hidden">
       <Canvas
-        camera={{ position: [0, 0, 5.2], fov: 48 }}
+        camera={{ position: [0, 0, 5.0], fov: 46 }}
         gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
         dpr={[1, 1.5]}
         style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
       >
+        <ResponsiveCamera />
         <ambientLight intensity={0.25} />
         <GlowFieldObjects isPaused={isPaused} pullProgress={pullProgress} />
       </Canvas>
