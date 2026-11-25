@@ -30,11 +30,11 @@ const steps: StepData[] = [
   {
     step: '01',
     title: 'Local Answer',
-    subtitle: 'Browser-Engine Execution',
+    subtitle: 'On-Device Engine',
     badge: 'ONLY_ON_DEVICE',
     badgeColor: '#FF2DA8',
     description:
-      'Queries, Python quiz generation, and conversation turns execute entirely on your machine via Chrome Prompt API and Gemini Nano. No prompt data leaves your network.',
+      'Your questions, chats, and Python quiz practice run right inside your browser. No prompt data leaves your machine.',
     codeSnippet: `// 1. Single-turn on-device inference
 const model = getGenerativeModel(ai, {
   model: 'gemini-nano',
@@ -43,19 +43,19 @@ const model = getGenerativeModel(ai, {
 const result = await model.generateContent(prompt);
 // Output source: "on_device"`,
     details: [
-      'Zero round-trip latency to external cloud servers',
-      'Encrypted client storage in IndexedDB via Dexie',
-      'Strict execution gate: throws rather than silent fallback',
+      'Runs 100% offline with zero cloud lag',
+      'Saved only to your private browser storage',
+      'Never sends background telemetry',
     ],
   },
   {
     step: '02',
     title: 'Privacy Check',
-    subtitle: 'Deterministic Sanitization',
+    subtitle: 'Automatic Redaction',
     badge: 'PII_REDACTOR_ACTIVE',
     badgeColor: '#FF2DA8',
     description:
-      'Before any request can even be prepared for the cloud planner, a deterministic rule engine strips telephone numbers, email addresses, and user-marked personal entities.',
+      'Before anything is prepared for an optional cloud task, phone numbers, emails, and personal names are stripped automatically.',
     codeSnippet: `// 2. Deterministic Regex & Dictionary Redaction
 const sanitized = sanitizePayload({
   rawTopic: "Python study plan for alice@example.com (555-0199)",
@@ -63,19 +63,19 @@ const sanitized = sanitizePayload({
 });
 // Redacted: "Python study plan for [EMAIL_REDACTED] ([PHONE_REDACTED])"`,
     details: [
-      'Rules-based, deterministic engine — never AI hallucinated',
-      'Warning alerts on ambiguous unstructured notes',
-      '100% auditable client-side transform',
+      'Deterministic rule engine cleans every detail',
+      'Alerts you if sensitive text is found',
+      'Auditable right on your screen',
     ],
   },
   {
     step: '03',
     title: 'User Approval',
-    subtitle: 'Human-in-the-Loop Gate',
+    subtitle: 'You Decide What Sends',
     badge: 'EXPLICIT_APPROVAL_REQUIRED',
     badgeColor: '#FF2DA8',
     description:
-      'A modal displays the exact sanitized JSON payload. You inspect every byte before transmission. The cloud request is strictly blocked until you click Approve.',
+      'You inspect the exact cleaned request in a preview window. Nothing leaves your computer without your explicit click.',
     codeSnippet: `// 3. Mandatory Human Approval Gate
 const isApproved = await requestUserApprovalModal({
   targetUrl: "https://generativelanguage.googleapis.com/...",
@@ -84,19 +84,19 @@ const isApproved = await requestUserApprovalModal({
 });
 if (!isApproved) return; // Request aborted cleanly`,
     details: [
-      'Full payload transparency with syntax highlighting',
-      'One-click Cancel instantly aborts without transmission',
-      'Pending queue for offline requests with manual Sync',
+      'Inspect every line before transmission',
+      'One click cancels instantly with zero send',
+      'Queue offline and sync only when you want',
     ],
   },
   {
     step: '04',
     title: 'Saved Result',
-    subtitle: 'Dual-Gated Firestore Storage',
+    subtitle: 'Verified and Protected',
     badge: 'ZOD_VALIDATED_WRITE',
     badgeColor: '#FF2DA8',
     description:
-      'Cloud response is validated against strict Zod schemas. Once rendered, you review the tasks and approve or reject saving them to Firestore under your anonymous user ID.',
+      'The returned plan is verified against strict schemas. You review the final result before saving to your private space.',
     codeSnippet: `// 4. Schema validation and second approval gate
 const validatedPlan = StudyPlanSchema.parse(cloudResponse);
 const saveApproved = await confirmFirestoreSave(validatedPlan);
@@ -104,9 +104,9 @@ if (saveApproved) {
   await setDoc(doc(db, 'tasks', taskId), { ...task, userId: auth.currentUser.uid });
 }`,
     details: [
-      'Separate approvals for generation vs. cloud database persistence',
-      'Strict Firestore security rules: users access only their own ID',
-      'Client verification of all schema properties',
+      'Strict schema validation on every response',
+      'User-isolated Firestore security rules',
+      'Full control to save, copy, or discard',
     ],
   },
 ];
@@ -117,6 +117,7 @@ export const HowItWorksSection: React.FC = () => {
 
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isTest = (globalThis as unknown as { process?: { env?: { NODE_ENV?: string } } }).process?.env?.NODE_ENV === 'test';
     if (prefersReducedMotion || !sectionRef.current) return;
 
     const ctx = gsap.context(() => {
@@ -145,16 +146,17 @@ export const HowItWorksSection: React.FC = () => {
         ease: 'power2.out',
       });
 
-      // Cinematic scrollytelling step progression
+      // Cinematic scrollytelling step progression with dedicated scroll runway
       ScrollTrigger.create({
         trigger: sectionRef.current,
-        start: 'top 55%',
-        end: 'bottom 85%',
+        start: 'top 80px',
+        end: '+=2000',
+        pin: !isTest,
+        scrub: 0.5,
+        anticipatePin: 1,
         onUpdate: (self) => {
-          if (self.scroll() > 10) {
-            const step = Math.min(3, Math.floor(self.progress * 4));
-            setActiveStepIndex(step);
-          }
+          const step = Math.min(3, Math.floor(self.progress * 4));
+          setActiveStepIndex(step);
         },
       });
     }, sectionRef);
@@ -181,7 +183,7 @@ export const HowItWorksSection: React.FC = () => {
             How It Works
           </h2>
           <p className="text-zinc-400 text-base sm:text-lg max-w-2xl mx-auto">
-            A transparent four-step sequence guaranteeing that on-device models do the thinking, and cloud APIs act only with your signed consent.
+            A clear four-step process: on-device AI runs first, and external tasks wait for your direct approval.
           </p>
         </div>
 
