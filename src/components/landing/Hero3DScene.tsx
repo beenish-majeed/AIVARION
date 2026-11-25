@@ -233,8 +233,24 @@ const GlowFieldObjects: React.FC<AbstractGlowFieldProps> = ({ isPaused, pullProg
 
         // Organic undulating meadow wave
         const wave = Math.sin(time * 0.75 + ix * 0.75 + iz * 0.55) * 0.07;
-        posAttr.array[idx] = ix;
-        posAttr.array[idx + 1] = iy + wave;
+
+        // Magnetic cursor pull in 3D ("animation like a magnetic")
+        const pointerWorldX = mouse.current.x * 3.8;
+        const pointerWorldY = mouse.current.y * 2.4 - 0.5;
+        const pdx = pointerWorldX - ix;
+        const pdy = pointerWorldY - iy;
+        const pdist = Math.sqrt(pdx * pdx + pdy * pdy);
+
+        let magnetOffsetX = 0;
+        let magnetOffsetY = 0;
+        if (pdist < 1.6) {
+          const mFactor = (1.6 - pdist) / 1.6;
+          magnetOffsetX = (pdx / pdist) * mFactor * 0.35;
+          magnetOffsetY = (pdy / pdist) * mFactor * 0.35;
+        }
+
+        posAttr.array[idx] = ix + magnetOffsetX;
+        posAttr.array[idx + 1] = iy + wave + magnetOffsetY;
         posAttr.array[idx + 2] = iz;
       }
       posAttr.needsUpdate = true;
