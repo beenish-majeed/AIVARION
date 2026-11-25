@@ -32,7 +32,7 @@ const steps: StepData[] = [
     title: 'Local Answer',
     subtitle: 'Browser-Engine Execution',
     badge: 'ONLY_ON_DEVICE',
-    badgeColor: '#D4FF3F',
+    badgeColor: '#FF2DA8',
     description:
       'Queries, Python quiz generation, and conversation turns execute entirely on your machine via Chrome Prompt API and Gemini Nano. No prompt data leaves your network.',
     codeSnippet: `// 1. Single-turn on-device inference
@@ -73,7 +73,7 @@ const sanitized = sanitizePayload({
     title: 'User Approval',
     subtitle: 'Human-in-the-Loop Gate',
     badge: 'EXPLICIT_APPROVAL_REQUIRED',
-    badgeColor: '#D4FF3F',
+    badgeColor: '#FF2DA8',
     description:
       'A modal displays the exact sanitized JSON payload. You inspect every byte before transmission. The cloud request is strictly blocked until you click Approve.',
     codeSnippet: `// 3. Mandatory Human Approval Gate
@@ -221,7 +221,7 @@ export const HowItWorksSection: React.FC = () => {
         {/* Cinematic Scrollytelling Progress Track */}
         <div className="w-full bg-zinc-900/80 rounded-full h-1.5 mb-8 overflow-hidden relative border border-zinc-800/80">
           <div
-            className="h-full bg-gradient-to-r from-[#FF2DA8] to-[#D4FF3F] transition-all duration-500 ease-out shadow-[0_0_12px_rgba(255,45,168,0.5)]"
+            className="h-full bg-[#FF2DA8] transition-all duration-500 ease-out shadow-[0_0_12px_rgba(255,45,168,0.5)]"
             style={{ width: `${((activeStepIndex + 1) / steps.length) * 100}%` }}
           />
         </div>
@@ -264,7 +264,7 @@ export const HowItWorksSection: React.FC = () => {
               <ul className="space-y-2">
                 {currentStep.details.map((detail, i) => (
                   <li key={i} className="flex items-center gap-2.5 text-sm text-zinc-300">
-                    <CheckCircle2 className="w-4 h-4 text-[#D4FF3F] shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-[#FF2DA8] shrink-0" />
                     <span>{detail}</span>
                   </li>
                 ))}

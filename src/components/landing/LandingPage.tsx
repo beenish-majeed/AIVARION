@@ -3,6 +3,7 @@ import { Navbar } from '../layout/Navbar';
 import { Footer } from '../layout/Footer';
 import { HeroSection } from './HeroSection';
 import { HowItWorksSection } from './HowItWorksSection';
+import { VortexTransition } from './VortexTransition';
 import { CursorSpotlight } from './CursorSpotlight';
 import { MagneticButton } from './MagneticButton';
 import {
@@ -134,7 +135,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
               <span>100% On-Device Inference</span>
             </span>
             <span className="mx-6 flex items-center gap-3">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#D4FF3F]" />
+              <span className="w-1.5 h-1.5 rounded-full bg-zinc-600" />
               <span>Zero Cloud Surveillance</span>
             </span>
             <span className="mx-6 flex items-center gap-3">
@@ -142,7 +143,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
               <span>Deterministic Python Skill Coach</span>
             </span>
             <span className="mx-6 flex items-center gap-3">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#D4FF3F]" />
+              <span className="w-1.5 h-1.5 rounded-full bg-zinc-600" />
               <span>Client-Encrypted IndexedDB Notes</span>
             </span>
             <span className="mx-6 flex items-center gap-3">
@@ -150,7 +151,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
               <span>Dual Human Approval Gates</span>
             </span>
             <span className="mx-6 flex items-center gap-3">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#D4FF3F]" />
+              <span className="w-1.5 h-1.5 rounded-full bg-zinc-600" />
               <span>Zod Schema Validated</span>
             </span>
             {/* Duplicated for seamless continuous marquee loop */}
@@ -159,7 +160,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
               <span>100% On-Device Inference</span>
             </span>
             <span className="mx-6 flex items-center gap-3">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#D4FF3F]" />
+              <span className="w-1.5 h-1.5 rounded-full bg-zinc-600" />
               <span>Zero Cloud Surveillance</span>
             </span>
             <span className="mx-6 flex items-center gap-3">
@@ -167,7 +168,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
               <span>Deterministic Python Skill Coach</span>
             </span>
             <span className="mx-6 flex items-center gap-3">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#D4FF3F]" />
+              <span className="w-1.5 h-1.5 rounded-full bg-zinc-600" />
               <span>Client-Encrypted IndexedDB Notes</span>
             </span>
             <span className="mx-6 flex items-center gap-3">
@@ -175,11 +176,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
               <span>Dual Human Approval Gates</span>
             </span>
             <span className="mx-6 flex items-center gap-3">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#D4FF3F]" />
+              <span className="w-1.5 h-1.5 rounded-full bg-zinc-600" />
               <span>Zod Schema Validated</span>
             </span>
           </div>
         </div>
+
+        {/* Cinematic Vortex Black-Hole Transition */}
+        <VortexTransition />
 
         {/* 4-Step Interactive Sequence */}
         <HowItWorksSection />
