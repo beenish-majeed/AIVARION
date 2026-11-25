@@ -42,12 +42,21 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
         smoothWheel: true,
       });
 
+      lenis.on('scroll', ScrollTrigger.update);
+      gsap.ticker.add((time) => {
+        lenis?.raf(time * 1000);
+      });
+      gsap.ticker.lagSmoothing(0);
+
       function raf(time: number) {
         lenis?.raf(time);
         requestAnimationFrame(raf);
       }
       requestAnimationFrame(raf);
     }
+
+    const refreshTimer1 = setTimeout(() => ScrollTrigger.refresh(), 250);
+    const refreshTimer2 = setTimeout(() => ScrollTrigger.refresh(), 800);
 
     // 2. GSAP ScrollTrigger Entrance animations and interactive micro-interactions
     const ctx = gsap.context(() => {
@@ -104,6 +113,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
     }, containerRef);
 
     return () => {
+      clearTimeout(refreshTimer1);
+      clearTimeout(refreshTimer2);
       lenis?.destroy();
       ctx.revert();
     };

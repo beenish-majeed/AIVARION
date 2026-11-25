@@ -167,7 +167,11 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
         scrub: 0.8,
         animation: tl,
         invalidateOnRefresh: true,
+        refreshPriority: 10,
       });
+
+      // Recalculate all downstream triggers now that the hero pin spacer exists in DOM
+      ScrollTrigger.refresh();
     }
 
     const handleResize = () => {

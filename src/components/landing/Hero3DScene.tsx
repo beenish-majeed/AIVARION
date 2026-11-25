@@ -90,10 +90,11 @@ const GlowFieldObjects: React.FC<AbstractGlowFieldProps> = ({ isPaused, pullProg
 
   // 1. Layer 1: Midground Crescent Valley Particle Wave (1450 particles with dense flank wings)
   const waveParticleCount = 1450;
-  const [wavePositions, waveInitialPos, waveColors] = useMemo(() => {
+  const [wavePositions, waveInitialPos, waveColors, waveBaseColors] = useMemo(() => {
     const pos = new Float32Array(waveParticleCount * 3);
     const initPos = new Float32Array(waveParticleCount * 3);
     const colors = new Float32Array(waveParticleCount * 3);
+    const baseColors = new Float32Array(waveParticleCount * 3);
 
     const pinkColor = new THREE.Color('#FF2DA8');
     const roseColor = new THREE.Color('#FF68C5');
@@ -155,9 +156,13 @@ const GlowFieldObjects: React.FC<AbstractGlowFieldProps> = ({ isPaused, pullProg
       colors[i * 3] = chosenColor.r;
       colors[i * 3 + 1] = chosenColor.g;
       colors[i * 3 + 2] = chosenColor.b;
+
+      baseColors[i * 3] = chosenColor.r;
+      baseColors[i * 3 + 1] = chosenColor.g;
+      baseColors[i * 3 + 2] = chosenColor.b;
     }
 
-    return [pos, initPos, colors];
+    return [pos, initPos, colors, baseColors];
   }, []);
 
   // 2. Layer 2: Foreground Depth-of-Field Bokeh Discs (65 large soft blur particles)
@@ -238,6 +243,7 @@ const GlowFieldObjects: React.FC<AbstractGlowFieldProps> = ({ isPaused, pullProg
     if (wavePointsRef.current) {
       const geo = wavePointsRef.current.geometry;
       const posAttr = geo.attributes.position as THREE.BufferAttribute;
+      const colAttr = geo.attributes.color as THREE.BufferAttribute;
       const mat = wavePointsRef.current.material as THREE.PointsMaterial;
 
       let walkOpacity = 0.88;
@@ -269,6 +275,8 @@ const GlowFieldObjects: React.FC<AbstractGlowFieldProps> = ({ isPaused, pullProg
 
         let magnetOffsetX = 0;
         let magnetOffsetY = 0;
+        let isHighlighted = false;
+        let highlightFactor = 0;
 
         // Localized magnetic attraction ONLY directly under the cursor
         // Do not affect distant particles ahead along the Z axis
@@ -284,12 +292,14 @@ const GlowFieldObjects: React.FC<AbstractGlowFieldProps> = ({ isPaused, pullProg
             const pdx = pointerXAtDepth - (ix + flankDriftX);
             const pdy = pointerYAtDepth - (iy + wave + flankSlowDriftY);
             const pdist = Math.sqrt(pdx * pdx + pdy * pdy);
-            const magnetRadius = 0.55;
+            const magnetRadius = 0.65;
 
             if (pdist < magnetRadius && pdist > 0.001) {
               const mFactor = (magnetRadius - pdist) / magnetRadius;
-              magnetOffsetX = (pdx / pdist) * mFactor * 0.16;
-              magnetOffsetY = (pdy / pdist) * mFactor * 0.16;
+              magnetOffsetX = (pdx / pdist) * mFactor * 0.18;
+              magnetOffsetY = (pdy / pdist) * mFactor * 0.18;
+              isHighlighted = true;
+              highlightFactor = mFactor;
             }
           }
         }
@@ -297,8 +307,22 @@ const GlowFieldObjects: React.FC<AbstractGlowFieldProps> = ({ isPaused, pullProg
         posAttr.array[idx] = ix + magnetOffsetX + flankDriftX;
         posAttr.array[idx + 1] = iy + wave + magnetOffsetY + flankSlowDriftY;
         posAttr.array[idx + 2] = iz;
+
+        // Visually highlight dots under cursor with glowing Hot Pink & luminous brilliance
+        if (colAttr) {
+          if (isHighlighted) {
+            colAttr.array[idx] = Math.min(1.0, waveBaseColors[idx] + highlightFactor * 0.9);
+            colAttr.array[idx + 1] = Math.min(1.0, waveBaseColors[idx + 1] + highlightFactor * 0.65);
+            colAttr.array[idx + 2] = Math.min(1.0, waveBaseColors[idx + 2] + highlightFactor * 0.8);
+          } else {
+            colAttr.array[idx] = waveBaseColors[idx];
+            colAttr.array[idx + 1] = waveBaseColors[idx + 1];
+            colAttr.array[idx + 2] = waveBaseColors[idx + 2];
+          }
+        }
       }
       posAttr.needsUpdate = true;
+      if (colAttr) colAttr.needsUpdate = true;
     }
 
     // Foreground bokeh discs gentle floating drift

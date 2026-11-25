@@ -150,12 +150,22 @@ export const HowItWorksSection: React.FC = () => {
       ScrollTrigger.create({
         trigger: sectionRef.current,
         start: 'top 80px',
-        end: '+=2000',
+        end: '+=2400',
         pin: !isTest,
         scrub: 0.5,
         anticipatePin: 1,
+        refreshPriority: -1,
         onUpdate: (self) => {
-          const step = Math.min(3, Math.floor(self.progress * 4));
+          // If the section is not active or hasn't reached top yet, strictly lock to Step 1
+          if (!self.isActive || self.progress <= 0) {
+            setActiveStepIndex(0);
+            return;
+          }
+          if (self.progress >= 1) {
+            setActiveStepIndex(3);
+            return;
+          }
+          const step = Math.min(3, Math.floor(self.progress * 3.99));
           setActiveStepIndex(step);
         },
       });

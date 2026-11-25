@@ -96,14 +96,14 @@ export const ParticleBackground: React.FC = () => {
         if (dist < magnetRadius && mouseX >= 0 && dist > 0.1) {
           const magnetForce = (magnetRadius - dist) / magnetRadius;
           // Pull particle slightly towards the cursor during draw without permanently displacing it
-          drawX = p.x + (dx / dist) * magnetForce * 7;
-          drawY = p.y + (dy / dist) * magnetForce * 7;
+          drawX = p.x + (dx / dist) * magnetForce * 8;
+          drawY = p.y + (dy / dist) * magnetForce * 8;
 
-          // Highlight dot with glowing Hot Pink & increased scale
-          drawRadius = p.radius * (1 + magnetForce * 1.2);
-          drawColor = `rgba(255, 45, 168, ${Math.min(1, 0.45 + magnetForce * 0.55)})`;
+          // Highlight dot with glowing Hot Pink & luminous brilliance
+          drawRadius = p.radius * (1 + magnetForce * 1.5);
+          drawColor = `rgba(255, 65, 185, ${Math.min(1, 0.7 + magnetForce * 0.3)})`;
           ctx.shadowColor = '#FF2DA8';
-          ctx.shadowBlur = 8 * magnetForce;
+          ctx.shadowBlur = 12 * magnetForce;
         } else {
           ctx.shadowBlur = 0;
         }
