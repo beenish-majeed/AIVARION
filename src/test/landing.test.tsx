@@ -49,10 +49,12 @@ describe('AIVARION Phase 2 Landing Page Tests', () => {
       dispatchEvent: vi.fn(),
     }));
 
-    render(<HeroSection />);
+    const { container } = render(<HeroSection />);
 
     expect(screen.getByText(/STATIC_MODE_ACTIVE/i)).toBeInTheDocument();
     expect(screen.getByText(/AIVARION On-Device AI Core/i)).toBeInTheDocument();
+    expect(container.querySelectorAll('.hero-petal').length).toBe(0);
+    expect(container.querySelector('.hero-full-viewport')).toBeInTheDocument();
   });
 
   it('navigates to /app when CTA buttons are clicked', () => {

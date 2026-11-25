@@ -58,11 +58,19 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
   const [pullProgress, setPullProgress] = useState(0);
 
   useEffect(() => {
+    let st: ScrollTrigger | null = null;
+    let tl: gsap.core.Timeline | null = null;
+
     // 1. Detect prefers-reduced-motion
     const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     const checkMotionPreference = () => {
       if (motionQuery.matches) {
         setUseStaticFallback(true);
+        if (st) {
+          st.kill();
+          st = null;
+          ScrollTrigger.refresh();
+        }
       }
     };
     checkMotionPreference();
@@ -116,9 +124,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
     animId = requestAnimationFrame(updateFrame);
 
     // 5. Pinned Black Hole Pull with GSAP ScrollTrigger (5-6s desktop, ~2s mobile)
-    let st: ScrollTrigger | null = null;
-    let tl: gsap.core.Timeline | null = null;
-
     if (!motionQuery.matches && heroRef.current) {
       const isMobile = window.innerWidth < 768;
       const pinDistance = isMobile ? 1200 : 3400; // ~2s mobile, 5-6s desktop scroll distance
@@ -190,12 +195,18 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
       });
     }
 
+    const handleResize = () => {
+      ScrollTrigger.refresh();
+    };
+    window.addEventListener('resize', handleResize);
+
     return () => {
       st?.kill();
       tl?.kill();
       motionQuery.removeEventListener('change', checkMotionPreference);
       observer.disconnect();
       window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('resize', handleResize);
       cancelAnimationFrame(animId);
     };
   }, []);
@@ -265,39 +276,41 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
         )}
       </div>
 
-      {/* Flower Petal Ribbon Aperture in brand palette (#FF2DA8 & #0B0B0B) */}
-      <div className="absolute inset-0 pointer-events-none z-[1] flex items-center justify-center overflow-hidden">
-        {petalAngles.map((angle, idx) => (
-          <div
-            key={idx}
-            className="hero-petal absolute w-36 h-56 sm:w-56 sm:h-88 origin-bottom will-change-transform opacity-35"
-            style={{
-              transform: `rotate(${angle}deg) translateY(-25%) scale(1.15)`,
-            }}
-          >
-            <svg
-              viewBox="0 0 100 160"
-              className="w-full h-full drop-shadow-[0_0_25px_rgba(255,45,168,0.35)]"
-              fill="none"
+      {/* Flower Petal Ribbon Aperture in brand palette (#FF2DA8 & #0B0B0B) - hidden in static fallback */}
+      {!useStaticFallback && (
+        <div className="absolute inset-0 pointer-events-none z-[1] flex items-center justify-center overflow-hidden">
+          {petalAngles.map((angle, idx) => (
+            <div
+              key={idx}
+              className="hero-petal absolute w-36 h-56 sm:w-56 sm:h-88 origin-bottom will-change-transform opacity-35"
+              style={{
+                transform: `rotate(${angle}deg) translateY(-25%) scale(1.15)`,
+              }}
             >
-              <defs>
-                <linearGradient id={`hero-petal-${idx}`} x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#FF2DA8" stopOpacity="0.85" />
-                  <stop offset="45%" stopColor="#FF2DA8" stopOpacity="0.35" />
-                  <stop offset="100%" stopColor="#0B0B0B" stopOpacity="0.05" />
-                </linearGradient>
-              </defs>
-              <path
-                d="M50 0 C75 30 95 80 85 130 C75 160 50 160 50 160 C50 160 25 160 15 130 C5 80 25 30 50 0 Z"
-                fill={`url(#hero-petal-${idx})`}
-                stroke="#FF2DA8"
-                strokeWidth="1.2"
-                strokeOpacity="0.5"
-              />
-            </svg>
-          </div>
-        ))}
-      </div>
+              <svg
+                viewBox="0 0 100 160"
+                className="w-full h-full drop-shadow-[0_0_25px_rgba(255,45,168,0.35)]"
+                fill="none"
+              >
+                <defs>
+                  <linearGradient id={`hero-petal-${idx}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#FF2DA8" stopOpacity="0.85" />
+                    <stop offset="45%" stopColor="#FF2DA8" stopOpacity="0.35" />
+                    <stop offset="100%" stopColor="#0B0B0B" stopOpacity="0.05" />
+                  </linearGradient>
+                </defs>
+                <path
+                  d="M50 0 C75 30 95 80 85 130 C75 160 50 160 50 160 C50 160 25 160 15 130 C5 80 25 30 50 0 Z"
+                  fill={`url(#hero-petal-${idx})`}
+                  stroke="#FF2DA8"
+                  strokeWidth="1.2"
+                  strokeOpacity="0.5"
+                />
+              </svg>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Interactive Micro-Particle Field */}
       <ParticleBackground />
@@ -331,7 +344,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
           <a
             href="/app"
             onClick={handleCtaClick}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 rounded-full text-base font-semibold text-white bg-[#FF2DA8] hover:bg-[#E02094] transition-all duration-300 shadow-xl shadow-[#FF2DA8]/35 hover:shadow-[#FF2DA8]/55 hover:-translate-y-0.5 active:translate-y-0 focus:outline-none focus:ring-2 focus:ring-[#FF2DA8] focus:ring-offset-2 focus:ring-offset-[#0B0B0B]"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 rounded-full text-base font-bold text-white bg-[#FF2DA8] hover:bg-[#E02094] transition-all duration-300 shadow-xl shadow-[#FF2DA8]/35 hover:shadow-[#FF2DA8]/55 hover:-translate-y-0.5 active:translate-y-0 focus:outline-none focus:ring-2 focus:ring-[#FF2DA8] focus:ring-offset-2 focus:ring-offset-[#0B0B0B]"
             aria-label="Launch AIVARION Workspace"
           >
             <span>Try AIVARION</span>
