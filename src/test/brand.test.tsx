@@ -13,6 +13,7 @@ describe('AIVARION Phase 1 Brand and System Tests', () => {
     expect(logos.length).toBeGreaterThanOrEqual(1);
 
     // Headline and mission statement
+    expect(screen.getByText(/Your thoughts are yours/i)).toBeInTheDocument();
     expect(screen.getByText(/Intelligence Stays/i)).toBeInTheDocument();
     expect(screen.getAllByText(/On Your Machine/i).length).toBeGreaterThanOrEqual(1);
   });

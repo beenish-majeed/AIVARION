@@ -132,57 +132,32 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
         defaults: { ease: 'none' },
       });
 
-      // Central headline, subheadline, and button pull inward and rotate into the core
+      // Central headline gently scales up and dissolves overhead as user walks forward
       tl.to(
         showcaseContainerRef.current,
         {
-          scale: 0.12,
+          scale: 1.15,
+          y: -70,
           opacity: 0,
-          rotation: -140,
-          duration: 0.42,
-          ease: 'power2.in',
+          duration: 0.35,
+          ease: 'power1.out',
         },
         0
       );
 
-      // Drive 3D canvas pull progress
-      const pullState = { val: 0 };
+      // Drive 3D walk progress (0 to 1) over the full 5-6 second scroll distance
+      const walkState = { val: 0 };
       tl.to(
-        pullState,
+        walkState,
         {
           val: 1,
           duration: 1,
           onUpdate: () => {
-            setPullProgress(pullState.val);
+            setPullProgress(walkState.val);
           },
         },
         0
       );
-
-      // Petal ribbons pull inward, hold at singularity, and burst outward
-      const petals = gsap.utils.toArray<HTMLElement>('.hero-petal');
-      if (petals.length > 0) {
-        tl.to(
-          petals,
-          {
-            scale: 0.2,
-            rotation: (index) => index * 60 + 360,
-            opacity: 0.9,
-            duration: 0.45,
-          },
-          0
-        ).to(
-          petals,
-          {
-            scale: isMobile ? 3.5 : 5.8,
-            rotation: (index) => index * 60 + 720,
-            opacity: 0,
-            duration: 0.35,
-            ease: 'power3.in',
-          },
-          0.65
-        );
-      }
 
       st = ScrollTrigger.create({
         trigger: heroRef.current,
@@ -211,21 +186,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
     };
   }, []);
 
-  const handleCtaClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
-    if (onNavigate) {
-      onNavigate('/app');
-    } else {
-      window.location.href = '/app';
-    }
-  };
-
-  const petalAngles = [0, 60, 120, 180, 240, 300];
-
   return (
     <section
       ref={heroRef}
-      className="hero-full-viewport relative flex items-center justify-center pt-safe pb-safe px-4 sm:px-6 lg:px-8 overflow-hidden bg-[#0B0B0B]"
+      className="hero-full-viewport relative flex flex-col items-center justify-start pt-20 sm:pt-24 md:pt-28 pb-safe px-4 sm:px-6 lg:px-8 overflow-hidden bg-[#0B0B0B]"
     >
       {/* 3D Canvas filling the hero completely: position absolute, inset 0, width 100%, height 100% */}
       <div className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-hidden">
@@ -276,88 +240,18 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
         )}
       </div>
 
-      {/* Flower Petal Ribbon Aperture in brand palette (#FF2DA8 & #0B0B0B) - hidden in static fallback */}
-      {!useStaticFallback && (
-        <div className="absolute inset-0 pointer-events-none z-[1] flex items-center justify-center overflow-hidden">
-          {petalAngles.map((angle, idx) => (
-            <div
-              key={idx}
-              className="hero-petal absolute w-36 h-56 sm:w-56 sm:h-88 origin-bottom will-change-transform opacity-35"
-              style={{
-                transform: `rotate(${angle}deg) translateY(-25%) scale(1.15)`,
-              }}
-            >
-              <svg
-                viewBox="0 0 100 160"
-                className="w-full h-full drop-shadow-[0_0_25px_rgba(255,45,168,0.35)]"
-                fill="none"
-              >
-                <defs>
-                  <linearGradient id={`hero-petal-${idx}`} x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#FF2DA8" stopOpacity="0.85" />
-                    <stop offset="45%" stopColor="#FF2DA8" stopOpacity="0.35" />
-                    <stop offset="100%" stopColor="#0B0B0B" stopOpacity="0.05" />
-                  </linearGradient>
-                </defs>
-                <path
-                  d="M50 0 C75 30 95 80 85 130 C75 160 50 160 50 160 C50 160 25 160 15 130 C5 80 25 30 50 0 Z"
-                  fill={`url(#hero-petal-${idx})`}
-                  stroke="#FF2DA8"
-                  strokeWidth="1.2"
-                  strokeOpacity="0.5"
-                />
-              </svg>
-            </div>
-          ))}
-        </div>
-      )}
-
       {/* Interactive Micro-Particle Field */}
       <ParticleBackground />
 
-      {/* Center Headline, Subheadline, and Button above the 3D Canvas */}
+      {/* Center Headline: Clean single short line above the 3D visual */}
       <div
         ref={showcaseContainerRef}
-        className="relative z-10 text-center max-w-4xl mx-auto flex flex-col items-center justify-center space-y-6 sm:space-y-8 pointer-events-auto will-change-transform"
+        className="relative z-10 text-center max-w-4xl mx-auto flex flex-col items-center justify-start pointer-events-auto will-change-transform mt-8 sm:mt-14 md:mt-20 px-4"
       >
-        {/* Subtle Pill Status Badge (Sole Chartreuse token on screen) */}
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-zinc-900/90 border border-zinc-800 text-xs sm:text-sm text-zinc-300 backdrop-blur-md shadow-xl">
-          <span className="w-2 h-2 rounded-full bg-[#D4FF3F] glow-chartreuse-sm" />
-          <span className="font-medium">Private, Local-First AI Workspace</span>
-          <span className="text-zinc-600">|</span>
-          <span className="text-[#FF2DA8] font-semibold">100% Client Sovereignty</span>
-        </div>
-
-        {/* Confident, Large Headline */}
-        <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight text-white font-display leading-[1.04]">
-          Intelligence Stays <br />
-          <span className="kinetic-gradient-text">On Your Machine.</span>
+        <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-light tracking-tight text-white font-serif leading-[1.2] max-w-3xl mx-auto select-none drop-shadow-[0_2px_18px_rgba(0,0,0,0.85)]">
+          Your thoughts are yours. <br />
+          <span className="font-normal italic text-zinc-100">Your data should be, too.</span>
         </h1>
-
-        {/* Editorial Subtitle with high WCAG AA contrast */}
-        <p className="text-base sm:text-lg md:text-xl text-zinc-300 max-w-2xl mx-auto font-normal leading-relaxed backdrop-blur-[2px]">
-          The private ChatGPT-style assistant that works offline using on-device AI. Practice Python skills with deterministic grading, store encrypted personal notes, and plan tasks with cloud AI <span className="text-white font-medium underline decoration-[#FF2DA8]/50">only after you approve each step</span>.
-        </p>
-
-        {/* Primary Call to Action Actions */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2 w-full sm:w-auto">
-          <a
-            href="/app"
-            onClick={handleCtaClick}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 rounded-full text-base font-bold text-white bg-[#FF2DA8] hover:bg-[#E02094] transition-all duration-300 shadow-xl shadow-[#FF2DA8]/35 hover:shadow-[#FF2DA8]/55 hover:-translate-y-0.5 active:translate-y-0 focus:outline-none focus:ring-2 focus:ring-[#FF2DA8] focus:ring-offset-2 focus:ring-offset-[#0B0B0B]"
-            aria-label="Launch AIVARION Workspace"
-          >
-            <span>Try AIVARION</span>
-            <ArrowRight className="w-5 h-5" />
-          </a>
-
-          <a
-            href="#how-it-works"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full text-base font-medium text-zinc-300 bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 hover:text-white transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-zinc-600 backdrop-blur-md"
-          >
-            <span>Explore 4-Step Privacy</span>
-          </a>
-        </div>
       </div>
     </section>
   );
