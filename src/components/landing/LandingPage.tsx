@@ -3,7 +3,6 @@ import { Navbar } from '../layout/Navbar';
 import { Footer } from '../layout/Footer';
 import { HeroSection } from './HeroSection';
 import { HowItWorksSection } from './HowItWorksSection';
-import { VortexTransition } from './VortexTransition';
 import { CursorSpotlight } from './CursorSpotlight';
 import { MagneticButton } from './MagneticButton';
 import {
@@ -181,9 +180,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
             </span>
           </div>
         </div>
-
-        {/* Cinematic Vortex Black-Hole Transition */}
-        <VortexTransition />
 
         {/* 4-Step Interactive Sequence */}
         <HowItWorksSection />

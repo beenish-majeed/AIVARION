@@ -135,22 +135,52 @@ const GlowFieldObjects: React.FC<AbstractGlowFieldProps> = ({ isPaused, pullProg
 
     const time = state.clock.getElapsedTime();
 
+    // Black hole pull and burst dynamics driven by pullProgress (0 to 1)
+    let pullScale = 1;
+    let pullRotation = 0;
+    let pullOpacity = 1;
+
+    if (pullProgress <= 0.45) {
+      // Inward pull & spiral acceleration
+      const norm = pullProgress / 0.45;
+      pullScale = 1 - norm * 0.78;
+      pullRotation = norm * Math.PI * 3;
+      pullOpacity = 1;
+    } else if (pullProgress <= 0.7) {
+      // Compression & hold beat at vortex singularity
+      pullScale = 0.22;
+      pullRotation = Math.PI * 3 + (pullProgress - 0.45) * 4;
+      pullOpacity = 1;
+    } else {
+      // Outward burst into next section
+      const burstNorm = (pullProgress - 0.7) / 0.3;
+      pullScale = 0.22 + burstNorm * 5.8;
+      pullRotation = Math.PI * 3 + 1 + burstNorm * Math.PI * 2;
+      pullOpacity = Math.max(0, 1 - burstNorm * 1.3);
+    }
+
     if (groupRef.current) {
-      // Subtle organic tilt driven by mouse
+      // Coordinated tilt, mouse influence, and black hole pull
       groupRef.current.rotation.x = mouse.current.y * 0.18 + Math.sin(time * 0.15) * 0.04;
-      groupRef.current.rotation.y = time * 0.12 + mouse.current.x * 0.22;
-      groupRef.current.rotation.z = Math.cos(time * 0.12) * 0.03;
+      groupRef.current.rotation.y = time * 0.12 + mouse.current.x * 0.22 + pullRotation * 0.6;
+      groupRef.current.rotation.z = Math.cos(time * 0.12) * 0.03 + pullRotation * 0.4;
+      groupRef.current.scale.set(pullScale, pullScale, pullScale);
     }
 
     if (streaksGroupRef.current) {
-      streaksGroupRef.current.rotation.y = -time * 0.08;
+      streaksGroupRef.current.rotation.y = -time * 0.08 - pullRotation * 0.8;
       streaksGroupRef.current.rotation.x = Math.sin(time * 0.2) * 0.05;
+      streaksGroupRef.current.scale.set(pullScale, pullScale, pullScale);
     }
 
     // Dynamic subtle particle drift
     if (pointsRef.current) {
       const geo = pointsRef.current.geometry;
       const posAttr = geo.attributes.position as THREE.BufferAttribute;
+      const mat = pointsRef.current.material as THREE.PointsMaterial;
+      if (mat) {
+        mat.opacity = 0.8 * pullOpacity;
+      }
 
       for (let i = 0; i < particleCount; i++) {
         const idx = i * 3;
@@ -158,7 +188,7 @@ const GlowFieldObjects: React.FC<AbstractGlowFieldProps> = ({ isPaused, pullProg
         const initY = initialPositions[idx + 1];
         const initZ = initialPositions[idx + 2];
 
-        // Wave undulation
+        // Wave undulation + vortex swirl
         const wave = Math.sin(time * 0.6 + initX * 1.5 + initZ * 1.5) * 0.08;
 
         posAttr.array[idx] = initX + Math.cos(time * 0.25 + i) * 0.04;

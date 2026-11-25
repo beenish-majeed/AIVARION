@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { ParticleBackground } from './ParticleBackground';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 // Lazy-load the 3D WebGL bundle
 const Hero3DScene = lazy(() => import('./Hero3DScene'));
@@ -51,6 +55,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
   const showcaseContainerRef = useRef<HTMLDivElement>(null);
   const [isOffscreen, setIsOffscreen] = useState(false);
   const [useStaticFallback, setUseStaticFallback] = useState(false);
+  const [pullProgress, setPullProgress] = useState(0);
 
   useEffect(() => {
     // 1. Detect prefers-reduced-motion
@@ -80,13 +85,12 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
       observer.observe(heroRef.current);
     }
 
-    // 4. Hero pointer and scroll response dynamics
+    // 4. Subtle pointer response
     let animId: number;
     let targetX = 0;
     let targetY = 0;
     let currentX = 0;
     let currentY = 0;
-    let scrollY = 0;
 
     const handleMouseMove = (e: MouseEvent) => {
       if (motionQuery.matches) return;
@@ -95,37 +99,103 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
       targetY = (e.clientY / innerHeight - 0.5) * 2;
     };
 
-    const handleScroll = () => {
-      scrollY = window.scrollY;
-    };
-
     const updateFrame = () => {
       currentX += (targetX - currentX) * 0.06;
       currentY += (targetY - currentY) * 0.06;
 
-      if (showcaseContainerRef.current && !motionQuery.matches) {
+      if (showcaseContainerRef.current && !motionQuery.matches && pullProgress === 0) {
         const panX = currentX * 10;
         const panY = currentY * 8;
-        const scrollFactor = Math.min(1, scrollY / 650);
-        const opacity = Math.max(0.15, 1 - scrollFactor * 0.85);
-        const scale = 1 - scrollFactor * 0.04;
-
-        showcaseContainerRef.current.style.transform = `translate3d(${panX}px, ${panY}px, 0) scale(${scale})`;
-        showcaseContainerRef.current.style.opacity = `${opacity}`;
+        showcaseContainerRef.current.style.transform = `translate3d(${panX}px, ${panY}px, 0)`;
       }
 
       animId = requestAnimationFrame(updateFrame);
     };
 
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
-    window.addEventListener('scroll', handleScroll, { passive: true });
     animId = requestAnimationFrame(updateFrame);
 
+    // 5. Pinned Black Hole Pull with GSAP ScrollTrigger (5-6s desktop, ~2s mobile)
+    let st: ScrollTrigger | null = null;
+    let tl: gsap.core.Timeline | null = null;
+
+    if (!motionQuery.matches && heroRef.current) {
+      const isMobile = window.innerWidth < 768;
+      const pinDistance = isMobile ? 1200 : 3400; // ~2s mobile, 5-6s desktop scroll distance
+
+      tl = gsap.timeline({
+        defaults: { ease: 'none' },
+      });
+
+      // Central headline, subheadline, and button pull inward and rotate into the core
+      tl.to(
+        showcaseContainerRef.current,
+        {
+          scale: 0.12,
+          opacity: 0,
+          rotation: -140,
+          duration: 0.42,
+          ease: 'power2.in',
+        },
+        0
+      );
+
+      // Drive 3D canvas pull progress
+      const pullState = { val: 0 };
+      tl.to(
+        pullState,
+        {
+          val: 1,
+          duration: 1,
+          onUpdate: () => {
+            setPullProgress(pullState.val);
+          },
+        },
+        0
+      );
+
+      // Petal ribbons pull inward, hold at singularity, and burst outward
+      const petals = gsap.utils.toArray<HTMLElement>('.hero-petal');
+      if (petals.length > 0) {
+        tl.to(
+          petals,
+          {
+            scale: 0.2,
+            rotation: (index) => index * 60 + 360,
+            opacity: 0.9,
+            duration: 0.45,
+          },
+          0
+        ).to(
+          petals,
+          {
+            scale: isMobile ? 3.5 : 5.8,
+            rotation: (index) => index * 60 + 720,
+            opacity: 0,
+            duration: 0.35,
+            ease: 'power3.in',
+          },
+          0.65
+        );
+      }
+
+      st = ScrollTrigger.create({
+        trigger: heroRef.current,
+        start: 'top top',
+        end: `+=${pinDistance}`,
+        pin: true,
+        scrub: 0.8,
+        animation: tl,
+        invalidateOnRefresh: true,
+      });
+    }
+
     return () => {
+      st?.kill();
+      tl?.kill();
       motionQuery.removeEventListener('change', checkMotionPreference);
       observer.disconnect();
       window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('scroll', handleScroll);
       cancelAnimationFrame(animId);
     };
   }, []);
@@ -138,6 +208,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
       window.location.href = '/app';
     }
   };
+
+  const petalAngles = [0, 60, 120, 180, 240, 300];
 
   return (
     <section
@@ -187,10 +259,44 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
                 </div>
               }
             >
-              <Hero3DScene isPaused={isOffscreen} />
+              <Hero3DScene isPaused={isOffscreen} pullProgress={pullProgress} />
             </Suspense>
           </WebGLErrorBoundary>
         )}
+      </div>
+
+      {/* Flower Petal Ribbon Aperture in brand palette (#FF2DA8 & #0B0B0B) */}
+      <div className="absolute inset-0 pointer-events-none z-[1] flex items-center justify-center overflow-hidden">
+        {petalAngles.map((angle, idx) => (
+          <div
+            key={idx}
+            className="hero-petal absolute w-36 h-56 sm:w-56 sm:h-88 origin-bottom will-change-transform opacity-35"
+            style={{
+              transform: `rotate(${angle}deg) translateY(-25%) scale(1.15)`,
+            }}
+          >
+            <svg
+              viewBox="0 0 100 160"
+              className="w-full h-full drop-shadow-[0_0_25px_rgba(255,45,168,0.35)]"
+              fill="none"
+            >
+              <defs>
+                <linearGradient id={`hero-petal-${idx}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#FF2DA8" stopOpacity="0.85" />
+                  <stop offset="45%" stopColor="#FF2DA8" stopOpacity="0.35" />
+                  <stop offset="100%" stopColor="#0B0B0B" stopOpacity="0.05" />
+                </linearGradient>
+              </defs>
+              <path
+                d="M50 0 C75 30 95 80 85 130 C75 160 50 160 50 160 C50 160 25 160 15 130 C5 80 25 30 50 0 Z"
+                fill={`url(#hero-petal-${idx})`}
+                stroke="#FF2DA8"
+                strokeWidth="1.2"
+                strokeOpacity="0.5"
+              />
+            </svg>
+          </div>
+        ))}
       </div>
 
       {/* Interactive Micro-Particle Field */}
