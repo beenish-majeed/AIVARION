@@ -45,6 +45,7 @@ function createForegroundBokehTexture(): THREE.Texture {
 }
 
 const GlowFieldObjects: React.FC<AbstractGlowFieldProps> = ({ isPaused, pullProgress = 0 }) => {
+  const { size } = useThree();
   const groupRef = useRef<THREE.Group>(null);
   const wavePointsRef = useRef<THREE.Points>(null);
   const bokehPointsRef = useRef<THREE.Points>(null);
@@ -52,7 +53,7 @@ const GlowFieldObjects: React.FC<AbstractGlowFieldProps> = ({ isPaused, pullProg
   const coreGlowRef = useRef<THREE.Mesh>(null);
 
   // Mouse coordinate interpolation target for organic follower response
-  const mouse = useRef({ x: 0, y: 0, targetX: 0, targetY: 0 });
+  const mouse = useRef({ x: -999, y: -999, targetX: -999, targetY: -999 });
 
   useEffect(() => {
     const isFinePointer = window.matchMedia('(pointer: fine)').matches;
@@ -60,13 +61,26 @@ const GlowFieldObjects: React.FC<AbstractGlowFieldProps> = ({ isPaused, pullProg
 
     const handleMouseMove = (e: MouseEvent) => {
       const { innerWidth, innerHeight } = window;
-      mouse.current.targetX = (e.clientX / innerWidth) * 2 - 1;
-      mouse.current.targetY = -(e.clientY / innerHeight) * 2 + 1;
+      const tx = (e.clientX / innerWidth) * 2 - 1;
+      const ty = -(e.clientY / innerHeight) * 2 + 1;
+      mouse.current.targetX = tx;
+      mouse.current.targetY = ty;
+      if (mouse.current.x < -100) {
+        mouse.current.x = tx;
+        mouse.current.y = ty;
+      }
+    };
+
+    const handleMouseLeave = () => {
+      mouse.current.targetX = -999;
+      mouse.current.targetY = -999;
     };
 
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    document.addEventListener('mouseleave', handleMouseLeave);
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseleave', handleMouseLeave);
     };
   }, []);
 
@@ -198,8 +212,11 @@ const GlowFieldObjects: React.FC<AbstractGlowFieldProps> = ({ isPaused, pullProg
     if (isPaused) return;
 
     // Follower mouse easing
-    mouse.current.x += (mouse.current.targetX - mouse.current.x) * 0.05;
-    mouse.current.y += (mouse.current.targetY - mouse.current.y) * 0.05;
+    const isPointerActive = mouse.current.targetX > -100;
+    if (isPointerActive) {
+      mouse.current.x += (mouse.current.targetX - mouse.current.x) * 0.08;
+      mouse.current.y += (mouse.current.targetY - mouse.current.y) * 0.08;
+    }
 
     const time = state.clock.getElapsedTime();
 
@@ -233,6 +250,8 @@ const GlowFieldObjects: React.FC<AbstractGlowFieldProps> = ({ isPaused, pullProg
         mat.opacity = walkOpacity;
       }
 
+      const aspect = size.width / Math.max(1, size.height);
+
       for (let i = 0; i < waveParticleCount; i++) {
         const idx = i * 3;
         const ix = waveInitialPos[idx];
@@ -242,26 +261,38 @@ const GlowFieldObjects: React.FC<AbstractGlowFieldProps> = ({ isPaused, pullProg
         // Organic undulating meadow wave
         const wave = Math.sin(time * 0.75 + ix * 0.75 + iz * 0.55) * 0.07;
 
-        // Localized magnetic pull right where the cursor is (no global tilt)
-        const pointerWorldX = mouse.current.x * 4.0;
-        const pointerWorldY = mouse.current.y * 2.2 - 0.2;
-        const pdx = pointerWorldX - ix;
-        const pdy = pointerWorldY - iy;
-        const pdist = Math.sqrt(pdx * pdx + pdy * pdy);
-
-        let magnetOffsetX = 0;
-        let magnetOffsetY = 0;
-        if (pdist < 1.1) {
-          const mFactor = (1.1 - pdist) / 1.1;
-          magnetOffsetX = (pdx / pdist) * mFactor * 0.22;
-          magnetOffsetY = (pdy / pdist) * mFactor * 0.22;
-        }
-
         // Flank particles on left and right drift gently & slowly during the walk ("move some slowly slowly")
         const flankSign = ix > 0 ? 1 : -1;
         const flankDistance = Math.abs(ix);
         const flankDriftX = flankDistance > 1.0 ? flankSign * pullProgress * 0.95 : 0;
         const flankSlowDriftY = flankDistance > 1.0 ? Math.sin(time * 0.4 + ix * 0.8) * 0.06 : 0;
+
+        let magnetOffsetX = 0;
+        let magnetOffsetY = 0;
+
+        // Localized magnetic attraction ONLY directly under the cursor
+        // Do not affect distant particles ahead along the Z axis
+        if (isPointerActive) {
+          const worldZ = walkAdvanceZ + iz;
+          if (worldZ > -2.0 && worldZ < 3.8) {
+            const camZDist = 5.0 - worldZ;
+            const planeHalfH = camZDist * 0.424; // tan(fov/2) approx for 46 deg fov
+            const planeHalfW = planeHalfH * aspect;
+            const pointerXAtDepth = mouse.current.x * planeHalfW;
+            const pointerYAtDepth = mouse.current.y * planeHalfH;
+
+            const pdx = pointerXAtDepth - (ix + flankDriftX);
+            const pdy = pointerYAtDepth - (iy + wave + flankSlowDriftY);
+            const pdist = Math.sqrt(pdx * pdx + pdy * pdy);
+            const magnetRadius = 0.55;
+
+            if (pdist < magnetRadius && pdist > 0.001) {
+              const mFactor = (magnetRadius - pdist) / magnetRadius;
+              magnetOffsetX = (pdx / pdist) * mFactor * 0.16;
+              magnetOffsetY = (pdy / pdist) * mFactor * 0.16;
+            }
+          }
+        }
 
         posAttr.array[idx] = ix + magnetOffsetX + flankDriftX;
         posAttr.array[idx + 1] = iy + wave + magnetOffsetY + flankSlowDriftY;
