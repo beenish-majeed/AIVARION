@@ -216,7 +216,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
               <div className="flex items-center justify-between pb-3.5 border-b border-zinc-800/80">
                 <div className="flex items-center gap-3">
                   <img src={iconImg} alt="AIVARION" className="h-6 w-auto object-contain" />
-                  <span className="text-xs font-mono text-zinc-400">CORE_ORBIT_ENGINE</span>
+                  <span className="text-xs font-mono text-zinc-400">ABSTRACT_GLOW_FIELD</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-zinc-400">
                   <span className="w-2 h-2 rounded-full bg-[#FF2DA8]" />
@@ -229,37 +229,55 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
               {/* 3D Scene Viewport or Static Hero Fallback */}
               <div className="w-full h-[320px] sm:h-[380px] flex items-center justify-center relative overflow-hidden">
                 {useStaticFallback ? (
-                  <div className="flex flex-col items-center justify-center text-center space-y-4">
-                    <div className="relative w-36 h-36 rounded-full border-2 border-[#FF2DA8]/30 flex items-center justify-center">
-                      <div className="w-24 h-24 rounded-full border border-[#FF2DA8] shadow-[0_0_30px_rgba(255,45,168,0.25)] flex items-center justify-center bg-[#0B0B0B]">
-                        <div className="w-9 h-9 rounded-full bg-[#FF2DA8] shadow-[0_0_15px_#FF2DA8] flex items-center justify-center">
-                          <Cpu className="w-5 h-5 text-white" />
-                        </div>
-                      </div>
+                  <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-[#0B0B0B] rounded-lg">
+                    {/* Radial glow backdrop */}
+                    <div className="absolute w-72 h-72 rounded-full bg-[#FF2DA8]/20 blur-[60px] pointer-events-none" />
+                    <div className="absolute w-40 h-40 rounded-full bg-[#FF2DA8]/30 blur-[30px] pointer-events-none" />
+
+                    {/* Abstract light streaks (still SVG) */}
+                    <svg viewBox="0 0 400 300" className="w-full h-full absolute inset-0 pointer-events-none">
+                      <defs>
+                        <linearGradient id="fallbackStreakGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#FF2DA8" stopOpacity="0.85" />
+                          <stop offset="50%" stopColor="#FF2DA8" stopOpacity="0.3" />
+                          <stop offset="100%" stopColor="#0B0B0B" stopOpacity="0" />
+                        </linearGradient>
+                      </defs>
+                      <ellipse cx="200" cy="150" rx="140" ry="70" fill="none" stroke="url(#fallbackStreakGrad)" strokeWidth="2" strokeDasharray="180 30" transform="rotate(-15 200 150)" />
+                      <ellipse cx="200" cy="150" rx="120" ry="90" fill="none" stroke="#FF2DA8" strokeOpacity="0.4" strokeWidth="1.5" strokeDasharray="120 40" transform="rotate(35 200 150)" />
+                      <ellipse cx="200" cy="150" rx="160" ry="50" fill="none" stroke="#FF2DA8" strokeOpacity="0.3" strokeWidth="1.2" strokeDasharray="90 50" transform="rotate(-40 200 150)" />
+                      {[
+                        [180, 130, 2.5], [220, 160, 3], [150, 170, 2], [240, 120, 2],
+                        [190, 110, 1.5], [210, 190, 2], [130, 140, 1.5], [270, 150, 2.5],
+                        [160, 100, 2], [230, 180, 1.8], [175, 165, 2.8], [205, 135, 3.2],
+                        [140, 185, 1.5], [260, 130, 1.8], [195, 148, 4]
+                      ].map(([x, y, r], idx) => (
+                        <circle key={idx} cx={x} cy={y} r={r} fill="#FF2DA8" opacity={0.85} />
+                      ))}
+                    </svg>
+
+                    <div className="absolute bottom-3 text-[11px] font-mono text-zinc-400 bg-black/60 px-2.5 py-1 rounded border border-zinc-800">
+                      [AIVARION On-Device AI Core • Abstract Glow Field Still View]
                     </div>
-                    <p className="text-xs text-zinc-400 font-mono tracking-wider">
-                      [AIVARION On-Device AI Core • Hardware Optimized]
-                    </p>
                   </div>
                 ) : (
                   <WebGLErrorBoundary
                     fallback={
-                      <div className="flex flex-col items-center justify-center text-center space-y-4">
-                        <div className="relative w-36 h-36 rounded-full border-2 border-[#FF2DA8]/30 flex items-center justify-center">
-                          <div className="w-24 h-24 rounded-full border border-[#FF2DA8] flex items-center justify-center bg-[#0B0B0B]">
-                            <Cpu className="w-5 h-5 text-[#FF2DA8]" />
-                          </div>
+                      <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-[#0B0B0B] rounded-lg">
+                        <div className="absolute w-56 h-56 rounded-full bg-[#FF2DA8]/20 blur-[50px] pointer-events-none" />
+                        <svg viewBox="0 0 400 300" className="w-full h-full absolute inset-0 pointer-events-none">
+                          <ellipse cx="200" cy="150" rx="130" ry="65" fill="none" stroke="#FF2DA8" strokeOpacity="0.5" strokeWidth="1.5" strokeDasharray="140 30" transform="rotate(-15 200 150)" />
+                        </svg>
+                        <div className="text-[11px] font-mono text-zinc-400 bg-black/60 px-2.5 py-1 rounded border border-zinc-800">
+                          GLOW_FIELD • FALLBACK_VIEW
                         </div>
-                        <p className="text-xs text-zinc-400 font-mono tracking-wider">
-                          [WebGL Fallback • Static Mode]
-                        </p>
                       </div>
                     }
                   >
                     <Suspense
                       fallback={
                         <div className="flex items-center justify-center h-full text-zinc-500 font-mono text-xs">
-                          <span className="animate-pulse">INITIALIZING_3D_CORE...</span>
+                          <span className="animate-pulse">INITIALIZING_GLOW_FIELD...</span>
                         </div>
                       }
                     >

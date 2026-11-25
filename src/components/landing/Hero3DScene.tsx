@@ -2,167 +2,224 @@ import React, { useRef, useMemo, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
-interface SceneObjectProps {
+interface AbstractGlowFieldProps {
   isPaused: boolean;
+  pullProgress?: number;
 }
 
-const CoreRingMesh: React.FC<SceneObjectProps> = ({ isPaused }) => {
+// Procedural soft circular glow texture for glowing particles
+function createGlowDotTexture(): THREE.Texture {
+  const canvas = document.createElement('canvas');
+  canvas.width = 64;
+  canvas.height = 64;
+  const ctx = canvas.getContext('2d');
+  if (ctx) {
+    const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    gradient.addColorStop(0, 'rgba(255, 45, 168, 1)');
+    gradient.addColorStop(0.2, 'rgba(255, 45, 168, 0.85)');
+    gradient.addColorStop(0.5, 'rgba(255, 45, 168, 0.25)');
+    gradient.addColorStop(1, 'rgba(11, 11, 11, 0)');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 64, 64);
+  }
+  return new THREE.CanvasTexture(canvas);
+}
+
+const GlowFieldObjects: React.FC<AbstractGlowFieldProps> = ({ isPaused, pullProgress = 0 }) => {
   const groupRef = useRef<THREE.Group>(null);
-  const outerRingRef = useRef<THREE.Mesh>(null);
-  const innerRingRef = useRef<THREE.Mesh>(null);
-  const coreRef = useRef<THREE.Mesh>(null);
-  const glowLightRef = useRef<THREE.PointLight>(null);
+  const pointsRef = useRef<THREE.Points>(null);
+  const streaksGroupRef = useRef<THREE.Group>(null);
 
   // Mouse coordinate interpolation target
   const mouse = useRef({ x: 0, y: 0, targetX: 0, targetY: 0 });
-  // Scroll coordinate interpolation target
-  const scrollOffset = useRef({ current: 0, target: 0 });
 
   useEffect(() => {
+    const isFinePointer = window.matchMedia('(pointer: fine)').matches;
+    if (!isFinePointer) return;
+
     const handleMouseMove = (e: MouseEvent) => {
       const { innerWidth, innerHeight } = window;
       mouse.current.targetX = (e.clientX / innerWidth) * 2 - 1;
       mouse.current.targetY = -(e.clientY / innerHeight) * 2 + 1;
     };
 
-    const handleScroll = () => {
-      scrollOffset.current.target = window.scrollY;
-    };
-
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
-    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('scroll', handleScroll);
     };
   }, []);
 
-  // Hot Pink brand material
-  const pinkMaterial = useMemo(() => {
-    return new THREE.MeshStandardMaterial({
+  // 1. Generate abstract particle field positions
+  const particleCount = 750;
+  const [positions, initialPositions, particleScales] = useMemo(() => {
+    const pos = new Float32Array(particleCount * 3);
+    const initPos = new Float32Array(particleCount * 3);
+    const scales = new Float32Array(particleCount);
+
+    for (let i = 0; i < particleCount; i++) {
+      // Cylindrical / disc distribution with gentle 3D depth
+      const radius = 0.5 + Math.pow(Math.random(), 0.7) * 2.8;
+      const theta = Math.random() * Math.PI * 2;
+      const y = (Math.random() - 0.5) * 2.2;
+
+      const x = Math.cos(theta) * radius;
+      const z = Math.sin(theta) * radius;
+
+      pos[i * 3] = x;
+      pos[i * 3 + 1] = y;
+      pos[i * 3 + 2] = z;
+
+      initPos[i * 3] = x;
+      initPos[i * 3 + 1] = y;
+      initPos[i * 3 + 2] = z;
+
+      scales[i] = 0.6 + Math.random() * 0.8;
+    }
+
+    return [pos, initPos, scales];
+  }, []);
+
+  const pointTexture = useMemo(() => createGlowDotTexture(), []);
+
+  // 2. Abstract soft light streaks (smooth 3D curves)
+  const streakCurves = useMemo(() => {
+    const curves = [];
+    // 5 abstract orbital ribbon curves around center
+    const configs = [
+      { rx: 2.2, ry: 1.2, rz: 1.8, tiltX: 0.3, tiltY: 0.2, tiltZ: 0.1 },
+      { rx: 1.9, ry: 1.7, rz: 1.3, tiltX: -0.4, tiltY: 0.5, tiltZ: -0.2 },
+      { rx: 2.5, ry: 0.8, rz: 2.1, tiltX: 0.5, tiltY: -0.3, tiltZ: 0.4 },
+      { rx: 1.6, ry: 2.0, rz: 1.5, tiltX: -0.2, tiltY: 0.4, tiltZ: 0.3 },
+      { rx: 2.7, ry: 1.4, rz: 1.9, tiltX: 0.1, tiltY: -0.5, tiltZ: -0.3 },
+    ];
+
+    for (const c of configs) {
+      const pts = [];
+      const segments = 64;
+      for (let i = 0; i <= segments; i++) {
+        const t = (i / segments) * Math.PI * 2;
+        const x = Math.cos(t) * c.rx;
+        const y = Math.sin(t) * c.ry;
+        const z = Math.sin(t * 2) * 0.4 + Math.cos(t) * c.rz * 0.3;
+
+        // Apply tilts
+        const p = new THREE.Vector3(x, y, z);
+        p.applyAxisAngle(new THREE.Vector3(1, 0, 0), c.tiltX);
+        p.applyAxisAngle(new THREE.Vector3(0, 1, 0), c.tiltY);
+        p.applyAxisAngle(new THREE.Vector3(0, 0, 1), c.tiltZ);
+        pts.push(p);
+      }
+      const curve = new THREE.CatmullRomCurve3(pts, true);
+      curves.push(curve);
+    }
+    return curves;
+  }, []);
+
+  // Material for abstract light streaks in Hot Pink
+  const streakMaterial = useMemo(() => {
+    return new THREE.MeshBasicMaterial({
       color: new THREE.Color('#FF2DA8'),
-      emissive: new THREE.Color('#800045'),
-      emissiveIntensity: 0.35,
-      metalness: 0.75,
-      roughness: 0.22,
+      transparent: true,
+      opacity: 0.45,
+      blending: THREE.AdditiveBlending,
       wireframe: false,
-    });
-  }, []);
-
-  // Dark core material with subtle chartreuse inner accent
-  const coreMaterial = useMemo(() => {
-    return new THREE.MeshStandardMaterial({
-      color: new THREE.Color('#0B0B0B'),
-      metalness: 0.9,
-      roughness: 0.4,
-    });
-  }, []);
-
-  // Subtle inner core accent
-  const innerCoreMaterial = useMemo(() => {
-    return new THREE.MeshStandardMaterial({
-      color: new THREE.Color('#FF2DA8'),
-      emissive: new THREE.Color('#FF2DA8'),
-      emissiveIntensity: 0.8,
-      metalness: 0.2,
-      roughness: 0.1,
     });
   }, []);
 
   useFrame((state, delta) => {
     if (isPaused) return;
 
-    // Smooth lerp mouse tracking with refined organic damping
-    mouse.current.x += (mouse.current.targetX - mouse.current.x) * 0.08;
-    mouse.current.y += (mouse.current.targetY - mouse.current.y) * 0.08;
-
-    // Smooth lerp scroll tracking
-    scrollOffset.current.current +=
-      (scrollOffset.current.target - scrollOffset.current.current) * 0.07;
-    const scrollFactor = scrollOffset.current.current * 0.002;
+    // Smooth subtle pointer response
+    mouse.current.x += (mouse.current.targetX - mouse.current.x) * 0.05;
+    mouse.current.y += (mouse.current.targetY - mouse.current.y) * 0.05;
 
     const time = state.clock.getElapsedTime();
 
     if (groupRef.current) {
-      // Coordinated 3D tilt and depth recession on pointer and scroll
-      groupRef.current.rotation.x = -scrollFactor * 0.45 + mouse.current.y * 0.25;
-      groupRef.current.rotation.y = scrollFactor * 0.75 + mouse.current.x * 0.35;
-      groupRef.current.rotation.z = Math.sin(scrollFactor * 0.4) * 0.15;
-      groupRef.current.position.y = -Math.min(1.4, scrollFactor * 0.6);
-      groupRef.current.position.z = -Math.min(1.8, scrollFactor * 0.85);
+      // Subtle organic tilt driven by mouse
+      groupRef.current.rotation.x = mouse.current.y * 0.18 + Math.sin(time * 0.15) * 0.04;
+      groupRef.current.rotation.y = time * 0.12 + mouse.current.x * 0.22;
+      groupRef.current.rotation.z = Math.cos(time * 0.12) * 0.03;
     }
 
-    if (outerRingRef.current) {
-      outerRingRef.current.rotation.x = Math.sin(time * 0.4) * 0.25 + mouse.current.y * 0.45 + scrollFactor * 0.4;
-      outerRingRef.current.rotation.y = time * 0.38 + mouse.current.x * 0.55 + scrollFactor * 0.6;
-      outerRingRef.current.rotation.z = Math.cos(time * 0.3) * 0.15;
-      const ringScale = 1 + Math.min(0.2, scrollFactor * 0.1);
-      outerRingRef.current.scale.set(ringScale, ringScale, ringScale);
+    if (streaksGroupRef.current) {
+      streaksGroupRef.current.rotation.y = -time * 0.08;
+      streaksGroupRef.current.rotation.x = Math.sin(time * 0.2) * 0.05;
     }
 
-    if (innerRingRef.current) {
-      innerRingRef.current.rotation.x = -Math.sin(time * 0.3) * 0.22 - mouse.current.y * 0.35 - scrollFactor * 0.5;
-      innerRingRef.current.rotation.y = -time * 0.28 - mouse.current.x * 0.45 - scrollFactor * 0.45;
-      innerRingRef.current.rotation.z = Math.sin(time * 0.4) * 0.2;
-    }
+    // Dynamic subtle particle drift
+    if (pointsRef.current) {
+      const geo = pointsRef.current.geometry;
+      const posAttr = geo.attributes.position as THREE.BufferAttribute;
 
-    if (coreRef.current) {
-      coreRef.current.rotation.y = time * 0.22 + scrollFactor * 0.35;
-      const pulse = 1 + Math.sin(time * 2) * 0.035;
-      coreRef.current.scale.set(pulse, pulse, pulse);
-    }
+      for (let i = 0; i < particleCount; i++) {
+        const idx = i * 3;
+        const initX = initialPositions[idx];
+        const initY = initialPositions[idx + 1];
+        const initZ = initialPositions[idx + 2];
 
-    if (glowLightRef.current) {
-      const mouseDist = Math.sqrt(mouse.current.x * mouse.current.x + mouse.current.y * mouse.current.y);
-      glowLightRef.current.intensity = 1.8 + Math.sin(time * 3) * 0.4 + Math.min(1.1, scrollFactor) + mouseDist * 0.45;
+        // Wave undulation
+        const wave = Math.sin(time * 0.6 + initX * 1.5 + initZ * 1.5) * 0.08;
+
+        posAttr.array[idx] = initX + Math.cos(time * 0.25 + i) * 0.04;
+        posAttr.array[idx + 1] = initY + wave;
+        posAttr.array[idx + 2] = initZ + Math.sin(time * 0.25 + i) * 0.04;
+      }
+      posAttr.needsUpdate = true;
     }
   });
 
   return (
     <group ref={groupRef} position={[0, 0, 0]}>
-      {/* Outer Hot Pink Ribbon Ring (Torus) */}
-      <mesh ref={outerRingRef} material={pinkMaterial}>
-        <torusGeometry args={[2.2, 0.28, 36, 100]} />
-      </mesh>
+      {/* Abstract Glowing Particle Cloud */}
+      <points ref={pointsRef}>
+        <bufferGeometry>
+          <bufferAttribute
+            attach="attributes-position"
+            args={[positions, 3]}
+          />
+        </bufferGeometry>
+        <pointsMaterial
+          size={0.16}
+          map={pointTexture}
+          transparent
+          opacity={0.8}
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
+          color="#FF2DA8"
+        />
+      </points>
 
-      {/* Secondary inclined Orbit Ribbon */}
-      <mesh ref={innerRingRef} material={pinkMaterial} rotation={[Math.PI / 3, 0, Math.PI / 4]}>
-        <torusGeometry args={[2.0, 0.14, 24, 80]} />
-      </mesh>
+      {/* Abstract Soft Light Streaks */}
+      <group ref={streaksGroupRef}>
+        {streakCurves.map((curve, idx) => (
+          <mesh key={idx} material={streakMaterial}>
+            <tubeGeometry args={[curve, 64, 0.018, 8, true]} />
+          </mesh>
+        ))}
+      </group>
 
-      {/* Central Dark Core Sphere */}
-      <mesh ref={coreRef} material={coreMaterial}>
-        <sphereGeometry args={[1.0, 32, 32]} />
-      </mesh>
-
-      {/* Embedded inner core sphere */}
-      <mesh material={innerCoreMaterial} position={[0, 0, 0]}>
-        <sphereGeometry args={[0.35, 24, 24]} />
-      </mesh>
-
-      {/* Lighting setup inside group */}
-      <pointLight ref={glowLightRef} color="#FF2DA8" intensity={2} distance={8} />
-      <pointLight color="#FF2DA8" intensity={1.2} distance={4} position={[0, 0, 1]} />
+      {/* Center soft core glow light */}
+      <pointLight color="#FF2DA8" intensity={2.5} distance={7} position={[0, 0, 0]} />
     </group>
   );
 };
 
 interface Hero3DSceneProps {
   isPaused?: boolean;
+  pullProgress?: number;
 }
 
-export const Hero3DScene: React.FC<Hero3DSceneProps> = ({ isPaused = false }) => {
+export const Hero3DScene: React.FC<Hero3DSceneProps> = ({ isPaused = false, pullProgress = 0 }) => {
   return (
-    <div className="w-full h-full min-h-[380px] sm:min-h-[480px] relative pointer-events-none select-none">
+    <div className="w-full h-full min-h-[340px] sm:min-h-[420px] relative pointer-events-none select-none">
       <Canvas
-        camera={{ position: [0, 0, 6], fov: 45 }}
+        camera={{ position: [0, 0, 5.2], fov: 48 }}
         gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
         dpr={[1, 1.5]}
       >
-        <ambientLight intensity={0.4} />
-        <directionalLight position={[5, 5, 5]} intensity={1.5} color="#FFFFFF" />
-        <directionalLight position={[-5, -5, -3]} intensity={0.8} color="#FF2DA8" />
-        <CoreRingMesh isPaused={isPaused} />
+        <ambientLight intensity={0.2} />
+        <GlowFieldObjects isPaused={isPaused} pullProgress={pullProgress} />
       </Canvas>
     </div>
   );
