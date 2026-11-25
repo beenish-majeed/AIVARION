@@ -82,26 +82,26 @@ export const ParticleBackground: React.FC = () => {
         if (p.y < 0) p.y = height;
         if (p.y > height) p.y = 0;
 
-        // Magnetic cursor pull & glowing highlight ("animation like a magnetic")
+        // Localized magnetic cursor pull & glowing highlight directly where cursor is
         const dx = mouseX - p.x;
         const dy = mouseY - p.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        const magnetRadius = 140;
+        const magnetRadius = 75;
 
         let drawRadius = p.radius;
         let drawColor = p.color;
 
-        if (dist < magnetRadius) {
+        if (dist < magnetRadius && mouseX >= 0) {
           const magnetForce = (magnetRadius - dist) / magnetRadius;
-          // Magnetically pull particle smoothly towards the cursor
-          p.x += (dx / dist) * magnetForce * 1.6;
-          p.y += (dy / dist) * magnetForce * 1.6;
+          // Magnetically pull particle slightly towards the cursor
+          p.x += (dx / dist) * magnetForce * 1.2;
+          p.y += (dy / dist) * magnetForce * 1.2;
 
           // Highlight dot with glowing Hot Pink & increased scale
-          drawRadius = p.radius * (1 + magnetForce * 1.4);
-          drawColor = `rgba(255, 45, 168, ${Math.min(1, 0.4 + magnetForce * 0.6)})`;
+          drawRadius = p.radius * (1 + magnetForce * 1.3);
+          drawColor = `rgba(255, 45, 168, ${Math.min(1, 0.45 + magnetForce * 0.55)})`;
           ctx.shadowColor = '#FF2DA8';
-          ctx.shadowBlur = 14 * magnetForce;
+          ctx.shadowBlur = 10 * magnetForce;
         } else {
           ctx.shadowBlur = 0;
         }

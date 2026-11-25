@@ -212,9 +212,9 @@ const GlowFieldObjects: React.FC<AbstractGlowFieldProps> = ({ isPaused, pullProg
     if (groupRef.current) {
       groupRef.current.position.z = walkAdvanceZ;
       groupRef.current.position.y = -walkBobY;
-      groupRef.current.position.x = -walkSwayX + mouse.current.x * 0.16;
-      groupRef.current.rotation.y = mouse.current.x * 0.07;
-      groupRef.current.rotation.x = -mouse.current.y * 0.05;
+      groupRef.current.position.x = -walkSwayX;
+      groupRef.current.rotation.y = 0;
+      groupRef.current.rotation.x = 0;
     }
 
     // Dynamic wave undulation
@@ -242,19 +242,19 @@ const GlowFieldObjects: React.FC<AbstractGlowFieldProps> = ({ isPaused, pullProg
         // Organic undulating meadow wave
         const wave = Math.sin(time * 0.75 + ix * 0.75 + iz * 0.55) * 0.07;
 
-        // Magnetic cursor pull in 3D ("animation like a magnetic")
-        const pointerWorldX = mouse.current.x * 3.8;
-        const pointerWorldY = mouse.current.y * 2.4 - 0.5;
+        // Localized magnetic pull right where the cursor is (no global tilt)
+        const pointerWorldX = mouse.current.x * 4.0;
+        const pointerWorldY = mouse.current.y * 2.2 - 0.2;
         const pdx = pointerWorldX - ix;
         const pdy = pointerWorldY - iy;
         const pdist = Math.sqrt(pdx * pdx + pdy * pdy);
 
         let magnetOffsetX = 0;
         let magnetOffsetY = 0;
-        if (pdist < 1.6) {
-          const mFactor = (1.6 - pdist) / 1.6;
-          magnetOffsetX = (pdx / pdist) * mFactor * 0.35;
-          magnetOffsetY = (pdy / pdist) * mFactor * 0.35;
+        if (pdist < 1.1) {
+          const mFactor = (1.1 - pdist) / 1.1;
+          magnetOffsetX = (pdx / pdist) * mFactor * 0.22;
+          magnetOffsetY = (pdy / pdist) * mFactor * 0.22;
         }
 
         // Flank particles on left and right drift gently & slowly during the walk ("move some slowly slowly")
