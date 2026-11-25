@@ -3,7 +3,7 @@ import { Navbar } from '../layout/Navbar';
 import { Footer } from '../layout/Footer';
 import { HeroSection } from './HeroSection';
 import { HowItWorksSection } from './HowItWorksSection';
-import { MagneticCursor } from './MagneticCursor';
+import { CursorSpotlight } from './CursorSpotlight';
 import { MagneticButton } from './MagneticButton';
 import {
   ShieldCheck,
@@ -116,8 +116,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
 
   return (
     <div ref={containerRef} className="min-h-screen bg-[#0B0B0B] text-white flex flex-col selection:bg-[#FF2DA8] selection:text-white">
-      {/* Magnetic Cursor Follower */}
-      <MagneticCursor />
+      {/* Soft Pointer Spotlight (CSS Radial Gradient) */}
+      <CursorSpotlight />
 
       {/* Brand Header */}
       <Navbar currentPath="/" onNavigate={onNavigate} />
