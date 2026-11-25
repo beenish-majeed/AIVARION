@@ -225,7 +225,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                   <div className="p-3.5 rounded-xl bg-black/50 border border-zinc-800/80 font-mono text-xs space-y-2 mb-4">
                     <div className="text-zinc-400 flex items-center justify-between">
                       <span>&gt; prompt: "Explain async IO in Python"</span>
-                      <span className="text-[#D4FF3F] text-[10px]">ON_DEVICE</span>
+                      <span className="text-[#FF2DA8] text-[10px]">ON_DEVICE</span>
                     </div>
                     <div className="text-zinc-200 text-[11px] border-l-2 border-[#FF2DA8] pl-2 py-0.5">
                       "AsyncIO enables cooperative multitasking using an event loop..."
@@ -234,7 +234,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                 </div>
                 <div className="pt-4 border-t border-zinc-800/80 flex items-center justify-between text-xs text-zinc-400">
                   <span className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-[#D4FF3F]" />
+                    <span className="w-2 h-2 rounded-full bg-[#FF2DA8]" />
                     <span>Real-time SDK source indicator</span>
                   </span>
                   <span className="font-mono text-zinc-500">Dexie.js</span>
@@ -248,7 +248,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                     <div className="w-12 h-12 rounded-xl bg-zinc-800/80 border border-zinc-700/80 flex items-center justify-center text-white">
                       <GraduationCap className="w-6 h-6" />
                     </div>
-                    <span className="font-mono text-xs px-2.5 py-1 rounded-full bg-[#D4FF3F]/10 border border-[#D4FF3F]/30 text-[#D4FF3F] font-semibold">
+                    <span className="font-mono text-xs px-2.5 py-1 rounded-full bg-zinc-800 border border-zinc-700 text-zinc-300 font-semibold">
                       DETERMINISTIC
                     </span>
                   </div>
@@ -257,13 +257,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                     Interactive Python practice generated locally on-device. Answers are evaluated deterministically by deterministic code—never hallucinated by an LLM.
                   </p>
                   <div className="p-3.5 rounded-xl bg-black/50 border border-zinc-800/80 font-mono text-[11px] text-zinc-300 space-y-1 mb-4">
-                    <div className="text-[#D4FF3F]">✓ assert user_answer === correct_index</div>
+                    <div className="text-[#FF2DA8]">✓ assert user_answer === correct_index</div>
                     <div className="text-zinc-500"># 0 LLM grading error rate</div>
                   </div>
                 </div>
                 <div className="pt-4 border-t border-zinc-800/80 flex items-center justify-between text-xs text-zinc-400">
                   <span className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#D4FF3F]" />
+                    <CheckCircle2 className="w-4 h-4 text-[#FF2DA8]" />
                     <span>Zod schema validated questions</span>
                   </span>
                   <span className="font-mono text-zinc-500">100% Local</span>
@@ -306,7 +306,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                     <div className="w-12 h-12 rounded-xl bg-[#FF2DA8]/10 border border-[#FF2DA8]/30 flex items-center justify-center text-[#FF2DA8]">
                       <CloudLightning className="w-6 h-6" />
                     </div>
-                    <span className="font-mono text-xs px-2.5 py-1 rounded-full bg-[#D4FF3F]/10 border border-[#D4FF3F]/30 text-[#D4FF3F] font-semibold">
+                    <span className="font-mono text-xs px-2.5 py-1 rounded-full bg-[#FF2DA8]/10 border border-[#FF2DA8]/30 text-[#FF2DA8] font-semibold">
                       DUAL APPROVAL GATES
                     </span>
                   </div>
@@ -321,12 +321,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                     <span className="text-zinc-600">→</span>
                     <span className="px-2 py-0.5 rounded bg-zinc-800 text-zinc-400">Cloud AI</span>
                     <span className="text-zinc-600">→</span>
-                    <span className="px-2 py-0.5 rounded bg-[#D4FF3F]/20 text-[#D4FF3F]">Gate 2: Firestore</span>
+                    <span className="px-2 py-0.5 rounded bg-zinc-800 text-zinc-300">Gate 2: Firestore</span>
                   </div>
                 </div>
                 <div className="pt-4 border-t border-zinc-800/80 flex items-center justify-between text-xs text-zinc-400">
                   <span className="flex items-center gap-2">
-                    <ShieldCheck className="w-4 h-4 text-[#D4FF3F]" />
+                    <ShieldCheck className="w-4 h-4 text-[#FF2DA8]" />
                     <span>Dual human confirmation gates</span>
                   </span>
                   <span className="font-mono text-zinc-500">App Check Secure</span>
@@ -376,7 +376,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                     <span className="px-2.5 py-1 rounded-full glass-badge text-zinc-300 text-xs font-semibold">
                       Local-First Fallback
                     </span>
-                    <Sparkles className="w-4 h-4 text-[#D4FF3F]" />
+                    <Sparkles className="w-4 h-4 text-[#FF2DA8]" />
                   </div>
                   <h3 className="text-xl font-bold text-white mb-2">Hybrid Auto</h3>
                   <p className="text-zinc-400 text-sm leading-relaxed mb-4">

@@ -174,7 +174,7 @@ export const HowItWorksSection: React.FC = () => {
         {/* Section Header */}
         <div className="how-header text-center max-w-3xl mx-auto mb-16 space-y-4">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 text-xs font-medium text-zinc-300">
-            <span className="w-2 h-2 rounded-full bg-[#D4FF3F] glow-chartreuse-sm" />
+            <span className="w-2 h-2 rounded-full bg-[#FF2DA8]" />
             <span>The AIVARION Security Standard</span>
           </div>
           <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-white font-display">

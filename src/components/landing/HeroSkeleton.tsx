@@ -20,7 +20,6 @@ export const HeroSkeleton: React.FC<HeroSkeletonProps> = ({ onNavigate }) => {
     <section className="relative min-h-[90vh] flex items-center justify-center pt-28 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden bg-[#0B0B0B]">
       {/* Background ambient lighting */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#FF2DA8]/10 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-[350px] h-[350px] bg-[#D4FF3F]/5 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="relative max-w-5xl mx-auto text-center z-10 space-y-8">
         {/* Pill Badge */}
@@ -73,7 +72,7 @@ export const HeroSkeleton: React.FC<HeroSkeletonProps> = ({ onNavigate }) => {
                 <span className="text-xs font-mono text-zinc-500">LOCAL_FIRST_NODE_ACTIVE</span>
               </div>
               <div className="flex items-center gap-2 text-xs text-zinc-400">
-                <span className="w-2 h-2 rounded-full bg-[#D4FF3F]" />
+                <span className="w-2 h-2 rounded-full bg-[#FF2DA8]" />
                 <span className="font-mono">GEMINI_NANO_STANDBY</span>
               </div>
             </div>
@@ -82,8 +81,8 @@ export const HeroSkeleton: React.FC<HeroSkeletonProps> = ({ onNavigate }) => {
             <div className="py-12 flex flex-col items-center justify-center relative">
               <div className="w-48 h-48 sm:w-56 sm:h-56 rounded-full border-2 border-[#FF2DA8]/40 border-dashed animate-spin-slow flex items-center justify-center relative">
                 <div className="w-36 h-36 rounded-full border border-[#FF2DA8] shadow-[0_0_35px_rgba(255,45,168,0.35)] flex items-center justify-center bg-[#0B0B0B]/80">
-                  <div className="w-12 h-12 rounded-full bg-[#D4FF3F] shadow-[0_0_20px_#D4FF3F] flex items-center justify-center">
-                    <Cpu className="w-6 h-6 text-[#0B0B0B]" />
+                  <div className="w-12 h-12 rounded-full bg-[#FF2DA8] shadow-[0_0_20px_#FF2DA8] flex items-center justify-center">
+                    <Cpu className="w-6 h-6 text-white" />
                   </div>
                 </div>
               </div>
@@ -103,7 +102,7 @@ export const HeroSkeleton: React.FC<HeroSkeletonProps> = ({ onNavigate }) => {
               </div>
 
               <div className="flex items-start gap-3 p-3 rounded-lg bg-zinc-900/50">
-                <Sparkles className="w-4 h-4 text-[#D4FF3F] shrink-0 mt-0.5" />
+                <Sparkles className="w-4 h-4 text-[#FF2DA8] shrink-0 mt-0.5" />
                 <div>
                   <div className="text-xs font-semibold text-white">Hybrid Auto</div>
                   <div className="text-[11px] text-zinc-400">Local first, approval before cloud</div>
