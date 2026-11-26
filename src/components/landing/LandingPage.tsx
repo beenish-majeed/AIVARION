@@ -138,60 +138,56 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
         <HeroSection onNavigate={onNavigate} />
 
         {/* Kinetic Typography Marquee Ticker */}
-        <div className="py-3.5 border-y border-zinc-900 bg-black/60 overflow-hidden relative select-none">
-          <div className="kinetic-marquee-track text-xs font-mono tracking-widest uppercase text-zinc-400">
-            <span className="mx-6 flex items-center gap-3">
+        <div className="py-3 border-y border-zinc-900/80 bg-black/40 backdrop-blur-md overflow-hidden relative select-none">
+          <div className="kinetic-marquee-track text-xs font-mono tracking-wider uppercase text-zinc-400 font-medium">
+            <span className="mx-8 flex items-center gap-3">
               <span className="w-1.5 h-1.5 rounded-full bg-[#FF2DA8]" />
               <span>Intelligence Stays On Your Machine</span>
             </span>
-            <span className="mx-6 flex items-center gap-3">
+            <span className="mx-8 flex items-center gap-3">
               <span className="w-1.5 h-1.5 rounded-full bg-zinc-600" />
-              <span>100% On-Device Inference</span>
+              <span>Local-First AI Processing</span>
             </span>
-            <span className="mx-6 flex items-center gap-3">
-              <span className="w-1.5 h-1.5 rounded-full bg-zinc-600" />
-              <span>Zero Cloud Surveillance</span>
-            </span>
-            <span className="mx-6 flex items-center gap-3">
+            <span className="mx-8 flex items-center gap-3">
               <span className="w-1.5 h-1.5 rounded-full bg-[#FF2DA8]" />
-              <span>Deterministic Python Skill Coach</span>
+              <span>Online Tasks Only With Your Approval</span>
             </span>
-            <span className="mx-6 flex items-center gap-3">
+            <span className="mx-8 flex items-center gap-3">
               <span className="w-1.5 h-1.5 rounded-full bg-zinc-600" />
-              <span>Client-Encrypted IndexedDB Notes</span>
+              <span>Private Browser-Based Storage</span>
             </span>
-            <span className="mx-6 flex items-center gap-3">
+            <span className="mx-8 flex items-center gap-3">
               <span className="w-1.5 h-1.5 rounded-full bg-[#FF2DA8]" />
-              <span>Dual Human Approval Gates</span>
+              <span>Human Approval Before External Actions</span>
             </span>
-            <span className="mx-6 flex items-center gap-3">
+            <span className="mx-8 flex items-center gap-3">
               <span className="w-1.5 h-1.5 rounded-full bg-zinc-600" />
-              <span>Zod Schema Validated</span>
+              <span>Nothing Sent Without Your Permission</span>
             </span>
             {/* Duplicated for seamless continuous marquee loop */}
-            <span className="mx-6 flex items-center gap-3">
+            <span className="mx-8 flex items-center gap-3">
               <span className="w-1.5 h-1.5 rounded-full bg-[#FF2DA8]" />
-              <span>100% On-Device Inference</span>
+              <span>Local-First AI Processing</span>
             </span>
-            <span className="mx-6 flex items-center gap-3">
+            <span className="mx-8 flex items-center gap-3">
               <span className="w-1.5 h-1.5 rounded-full bg-zinc-600" />
-              <span>Zero Cloud Surveillance</span>
+              <span>Online Tasks Only With Your Approval</span>
             </span>
-            <span className="mx-6 flex items-center gap-3">
+            <span className="mx-8 flex items-center gap-3">
               <span className="w-1.5 h-1.5 rounded-full bg-[#FF2DA8]" />
-              <span>Deterministic Python Skill Coach</span>
+              <span>Private Browser-Based Storage</span>
             </span>
-            <span className="mx-6 flex items-center gap-3">
+            <span className="mx-8 flex items-center gap-3">
               <span className="w-1.5 h-1.5 rounded-full bg-zinc-600" />
-              <span>Client-Encrypted IndexedDB Notes</span>
+              <span>Human Approval Before External Actions</span>
             </span>
-            <span className="mx-6 flex items-center gap-3">
+            <span className="mx-8 flex items-center gap-3">
               <span className="w-1.5 h-1.5 rounded-full bg-[#FF2DA8]" />
-              <span>Dual Human Approval Gates</span>
+              <span>Nothing Sent Without Your Permission</span>
             </span>
-            <span className="mx-6 flex items-center gap-3">
+            <span className="mx-8 flex items-center gap-3">
               <span className="w-1.5 h-1.5 rounded-full bg-zinc-600" />
-              <span>Zod Schema Validated</span>
+              <span>Clear Local and Cloud Boundaries</span>
             </span>
           </div>
         </div>
