@@ -19,12 +19,12 @@ const steps: StepData[] = [
   {
     step: '01',
     title: 'Local Answer',
-    subtitle: 'On-Device Engine',
+    subtitle: 'Runs on your device',
     badge: 'ONLY_ON_DEVICE',
     badgeColor: '#FF2DA8',
     description:
-      'Your questions, chats, and Python quiz practice run right inside your browser. No prompt data leaves your machine.',
-    codeSnippet: `// 1. Single-turn on-device inference
+      'Your questions, notes, and quiz practice run directly on your computer. Nothing is sent over the internet.',
+    codeSnippet: `// 1. Instant on-device execution
 const model = getGenerativeModel(ai, {
   model: 'gemini-nano',
   mode: InferenceMode.ONLY_ON_DEVICE
@@ -32,40 +32,40 @@ const model = getGenerativeModel(ai, {
 const result = await model.generateContent(prompt);
 // Output source: "on_device"`,
     details: [
-      'Runs 100% offline with zero cloud lag',
-      'Saved only to your private browser storage',
-      'Never sends background telemetry',
+      'Runs locally with zero lag and works offline',
+      'Saved strictly to your private browser space',
+      'Never tracks activity or sends background analytics',
     ],
   },
   {
     step: '02',
     title: 'Privacy Check',
-    subtitle: 'Automatic Redaction',
+    subtitle: 'Automatic protection',
     badge: 'PII_REDACTOR_ACTIVE',
     badgeColor: '#FF2DA8',
     description:
-      'Before anything is prepared for an optional cloud task, phone numbers, emails, and personal names are stripped automatically.',
-    codeSnippet: `// 2. Deterministic Regex & Dictionary Redaction
+      'Before you choose to run any online task, personal details like names, emails, and phone numbers are automatically cleaned.',
+    codeSnippet: `// 2. Automatic personal info protection
 const sanitized = sanitizePayload({
-  rawTopic: "Python study plan for alice@example.com (555-0199)",
+  rawTopic: "Python study plan for user@example.com (555-0199)",
   forbiddenPatterns: [REGEX_EMAIL, REGEX_PHONE, USER_NAMES]
 });
 // Redacted: "Python study plan for [EMAIL_REDACTED] ([PHONE_REDACTED])"`,
     details: [
-      'Deterministic rule engine cleans every detail',
-      'Alerts you if sensitive text is found',
-      'Auditable right on your screen',
+      'Automatically cleans sensitive personal details',
+      'Highlights any identified items before sending',
+      'Keeps your identity shielded and secure',
     ],
   },
   {
     step: '03',
     title: 'User Approval',
-    subtitle: 'You Decide What Sends',
+    subtitle: 'Your explicit permission',
     badge: 'EXPLICIT_APPROVAL_REQUIRED',
     badgeColor: '#FF2DA8',
     description:
-      'You inspect the exact cleaned request in a preview window. Nothing leaves your computer without your explicit click.',
-    codeSnippet: `// 3. Mandatory Human Approval Gate
+      'Nothing gets sent without your permission. You inspect the exact preview first and approve it with one click.',
+    codeSnippet: `// 3. Clear human permission gate
 const isApproved = await requestUserApprovalModal({
   targetUrl: "https://generativelanguage.googleapis.com/...",
   payload: sanitizedPayload,
@@ -73,29 +73,29 @@ const isApproved = await requestUserApprovalModal({
 });
 if (!isApproved) return; // Request aborted cleanly`,
     details: [
-      'Inspect every line before transmission',
-      'One click cancels instantly with zero send',
-      'Queue offline and sync only when you want',
+      'Nothing leaves your computer without your click',
+      'Review the exact cleaned text before it goes online',
+      'Cancel instantly at any time with zero data sent',
     ],
   },
   {
     step: '04',
     title: 'Saved Result',
-    subtitle: 'Verified and Protected',
+    subtitle: 'Stored in your vault',
     badge: 'ZOD_VALIDATED_WRITE',
     badgeColor: '#FF2DA8',
     description:
-      'The returned plan is verified against strict schemas. You review the final result before saving to your private space.',
-    codeSnippet: `// 4. Schema validation and second approval gate
+      'Online responses are verified and structured on your device, then saved directly to your private local space.',
+    codeSnippet: `// 4. Safe structure check and private save
 const validatedPlan = StudyPlanSchema.parse(cloudResponse);
 const saveApproved = await confirmFirestoreSave(validatedPlan);
 if (saveApproved) {
   await setDoc(doc(db, 'tasks', taskId), { ...task, userId: auth.currentUser.uid });
 }`,
     details: [
-      'Strict schema validation on every response',
-      'User-isolated Firestore security rules',
-      'Full control to save, copy, or discard',
+      'Verified and organized cleanly for high reliability',
+      'Stored securely in your private browser database',
+      'Full freedom to keep, edit, or delete at any time',
     ],
   },
 ];
@@ -198,16 +198,12 @@ export const HowItWorksSection: React.FC = () => {
       >
         <div className="max-w-6xl mx-auto w-full flex flex-col justify-center">
           {/* Section Header */}
-          <div className="how-header text-center max-w-2xl mx-auto mb-3 sm:mb-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-[11px] sm:text-xs font-medium text-zinc-300 mb-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#FF2DA8]" />
-              <span>The AIVARION Security Standard</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-white font-display mb-1">
+          <div className="how-header text-center max-w-2xl mx-auto pt-2 sm:pt-4 mb-4 sm:mb-6">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-white font-display mb-2">
               How It Works
             </h2>
-            <p className="text-zinc-400 text-xs sm:text-sm max-w-xl mx-auto">
-              A clear four-step process: on-device AI runs first, and external tasks wait for your direct approval.
+            <p className="text-zinc-400 text-xs sm:text-sm max-w-xl mx-auto leading-relaxed">
+              Everyday AI runs entirely on your device. When an online task is needed, it only proceeds with your explicit permission.
             </p>
           </div>
 
@@ -288,7 +284,7 @@ export const HowItWorksSection: React.FC = () => {
 
               <div className="space-y-1.5 pt-0.5">
                 <h4 className="text-[11px] uppercase tracking-wider text-zinc-400 font-semibold">
-                  Guaranteed Implementation Rules
+                  Guaranteed Privacy Protections
                 </h4>
                 <ul className="space-y-1">
                   {currentStep.details.map((detail, i) => (
