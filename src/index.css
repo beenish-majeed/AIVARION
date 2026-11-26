@@ -70,13 +70,39 @@ body {
 }
 
 .glass-surface-interactive {
-  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+
+.glass-surface-interactive::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    380px circle at var(--card-mouse-x, 50%) var(--card-mouse-y, 50%),
+    rgba(255, 45, 168, 0.10) 0%,
+    rgba(255, 45, 168, 0.02) 40%,
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.glass-surface-interactive:hover::after {
+  opacity: 1;
 }
 
 .glass-surface-interactive:hover {
-  border-color: rgba(255, 45, 168, 0.4);
-  box-shadow: 0 16px 48px -12px rgba(255, 45, 168, 0.2), 0 0 0 1px rgba(255, 45, 168, 0.25);
-  transform: translateY(-3px);
+  border-color: rgba(255, 45, 168, 0.35);
+  box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.6),
+              0 0 24px -4px rgba(255, 45, 168, 0.15),
+              0 0 0 1px rgba(255, 45, 168, 0.2);
+  transform: translateY(-2px);
 }
 
 .glass-surface-active {
@@ -172,17 +198,17 @@ body {
 /* Step Card Transition */
 @keyframes stepFadeIn {
   from {
-    opacity: 0.4;
-    transform: translateY(6px);
+    opacity: 0.2;
+    transform: translateY(6px) scale(0.995);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
 .animate-stepFadeIn {
-  animation: stepFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: stepFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Responsive Hero Layout: 2-column desktop (>= 900px), stacked (< 900px) */
@@ -222,12 +248,13 @@ body {
 /* Soft Pointer Spotlight (CSS radial gradient driven by --spotlight-x & --spotlight-y) */
 .pointer-spotlight {
   opacity: 0;
-  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   background: radial-gradient(
-    650px circle at var(--spotlight-x, -1000px) var(--spotlight-y, -1000px),
-    rgba(255, 45, 168, 0.08) 0%,
-    rgba(255, 255, 255, 0.02) 40%,
-    transparent 80%
+    720px circle at var(--spotlight-x, -1000px) var(--spotlight-y, -1000px),
+    rgba(255, 45, 168, 0.11) 0%,
+    rgba(255, 45, 168, 0.035) 30%,
+    rgba(212, 255, 63, 0.012) 50%,
+    transparent 75%
   );
 }
 

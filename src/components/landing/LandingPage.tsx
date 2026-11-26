@@ -88,9 +88,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
           const rect = card.getBoundingClientRect();
           const relX = (e.clientX - rect.left) / rect.width - 0.5;
           const relY = (e.clientY - rect.top) / rect.height - 0.5;
-          setRotateY(relX * 8);
-          setRotateX(-relY * 8);
-          setScale(1.015);
+          setRotateY(relX * 6);
+          setRotateX(-relY * 6);
+          card.style.setProperty('--card-mouse-x', `${(e.clientX - rect.left).toFixed(1)}px`);
+          card.style.setProperty('--card-mouse-y', `${(e.clientY - rect.top).toFixed(1)}px`);
+          setScale(1.01);
         };
 
         const onCardLeave = () => {

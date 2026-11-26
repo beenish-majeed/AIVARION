@@ -218,7 +218,7 @@ export const HowItWorksSection: React.FC = () => {
                   className={`step-nav-item text-left p-2.5 sm:p-3 rounded-xl border transition-all duration-300 focus:outline-none focus:ring-1 focus:ring-[#FF2DA8] ${
                     isActive
                       ? 'bg-zinc-900/90 border-[#FF2DA8] shadow-lg shadow-[#FF2DA8]/15'
-                      : 'bg-zinc-950/50 border-zinc-800/80 hover:border-zinc-700'
+                      : 'bg-zinc-950/50 border-zinc-800/80 hover:border-zinc-700 hover:bg-zinc-900/40 hover:-translate-y-0.5'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-1">
