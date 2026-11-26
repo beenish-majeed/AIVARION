@@ -169,6 +169,22 @@ body {
   animation: liquidWipe 0.75s cubic-bezier(0.76, 0, 0.24, 1) forwards;
 }
 
+/* Step Card Transition */
+@keyframes stepFadeIn {
+  from {
+    opacity: 0.4;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-stepFadeIn {
+  animation: stepFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
 /* Responsive Hero Layout: 2-column desktop (>= 900px), stacked (< 900px) */
 @media (min-width: 900px) {
   .hero-responsive-grid {
