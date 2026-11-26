@@ -193,7 +193,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
   return (
     <section
       ref={heroRef}
-      className="hero-full-viewport relative flex flex-col items-center justify-start pt-20 sm:pt-24 md:pt-28 pb-safe px-4 sm:px-6 lg:px-8 overflow-hidden bg-[#0B0B0B]"
+      className="hero-full-viewport relative flex flex-col items-center justify-start pt-24 sm:pt-28 md:pt-32 pb-safe px-4 sm:px-6 lg:px-8 overflow-hidden bg-[#0B0B0B]"
     >
       {/* 3D Canvas filling the hero completely: position absolute, inset 0, width 100%, height 100% */}
       <div className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-hidden">
@@ -244,9 +244,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
       {/* Center Headline: Clean single short line above the 3D visual */}
       <div
         ref={showcaseContainerRef}
-        className="relative z-10 text-center max-w-4xl mx-auto flex flex-col items-center justify-start pointer-events-auto will-change-transform mt-8 sm:mt-14 md:mt-20 px-4"
+        className="relative z-10 text-center max-w-4xl mx-auto flex flex-col items-center justify-start pointer-events-auto will-change-transform mt-10 sm:mt-16 md:mt-24 mb-16 sm:mb-24 px-4"
       >
-        <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-light tracking-tight text-white font-serif leading-[1.2] max-w-3xl mx-auto select-none drop-shadow-[0_2px_18px_rgba(0,0,0,0.85)]">
+        <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-light tracking-tight text-white font-serif leading-[1.25] max-w-3xl mx-auto select-none drop-shadow-[0_2px_18px_rgba(0,0,0,0.85)]">
           Your thoughts are yours. <br />
           <span className="font-normal italic text-zinc-100">Your data should be, too.</span>
         </h1>
