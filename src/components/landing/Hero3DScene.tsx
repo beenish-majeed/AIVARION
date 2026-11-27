@@ -99,6 +99,8 @@ const GlowFieldObjects: React.FC<AbstractGlowFieldProps> = ({ isPaused, pullProg
     const pinkColor = new THREE.Color('#FF2DA8');
     const roseColor = new THREE.Color('#FF68C5');
     const deepPink = new THREE.Color('#C4157A');
+    const orchidColor = new THREE.Color('#C084FC');
+    const goldColor = new THREE.Color('#FDE047');
     const whiteColor = new THREE.Color('#FFFFFF');
     const chartreuseColor = new THREE.Color('#D4FF3F');
 
@@ -116,10 +118,10 @@ const GlowFieldObjects: React.FC<AbstractGlowFieldProps> = ({ isPaused, pullProg
 
       const z = -12.0 + Math.random() * 16.0; // extended path for 5-6 second forward walking flythrough
 
-      // Base crescent / U-shaped valley elevation:
-      // High on wings (x = +/-4.2 -> y ~ 0.8), dipping low in center (x = 0 -> y ~ -1.4)
-      const uValley = Math.pow(x / 4.5, 2);
-      const baseY = -1.35 + uValley * 2.2 - (z * 0.04);
+      // Base crescent / U-shaped valley elevation with arching flank framing
+      const uValley = Math.pow(x / 4.2, 2);
+      const flankArch = Math.exp(-Math.pow((Math.abs(x) - 2.6) / 1.5, 2)) * 0.75;
+      const baseY = -1.35 + uValley * 1.8 + flankArch - (z * 0.04);
 
       // Organic rolling harmonic wave undulation
       const ripple = Math.sin(x * 0.85 + 0.5) * 0.32 + Math.cos(z * 0.8) * 0.2;
@@ -137,19 +139,23 @@ const GlowFieldObjects: React.FC<AbstractGlowFieldProps> = ({ isPaused, pullProg
       initPos[i * 3 + 1] = y;
       initPos[i * 3 + 2] = z;
 
-      // Color variation in Hot Pink brand palette
+      // Color variation reflecting lush floral palette with Hot Pink & Chartreuse brand essence
       const randColor = Math.random();
       let chosenColor = pinkColor;
-      if (randColor < 0.45) {
+      if (randColor < 0.40) {
         chosenColor = pinkColor;
-      } else if (randColor < 0.75) {
+      } else if (randColor < 0.65) {
         chosenColor = roseColor;
-      } else if (randColor < 0.94) {
+      } else if (randColor < 0.80) {
+        chosenColor = orchidColor;
+      } else if (randColor < 0.89) {
+        chosenColor = goldColor;
+      } else if (randColor < 0.95) {
         chosenColor = deepPink;
       } else if (randColor < 0.985) {
         chosenColor = whiteColor;
       } else {
-        // Minimal chartreuse spark (1.5% of particles)
+        // Subtle chartreuse spark
         chosenColor = chartreuseColor;
       }
 
@@ -425,6 +431,7 @@ const GlowFieldObjects: React.FC<AbstractGlowFieldProps> = ({ isPaused, pullProg
       {/* Cinematic Luminous Core Point Lights */}
       <pointLight color="#FF2DA8" intensity={3.0} distance={7} position={[0, -1.35, 0.6]} />
       <pointLight color="#FF68C5" intensity={1.6} distance={4.5} position={[0, -0.9, 1.1]} />
+      <pointLight color="#FDE047" intensity={1.2} distance={3.8} position={[0, -1.4, 0.9]} />
     </group>
   );
 };

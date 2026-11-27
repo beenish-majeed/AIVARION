@@ -185,7 +185,7 @@ export const HowItWorksSection: React.FC = () => {
     <section
       ref={containerRef}
       id="how-it-works"
-      className="relative bg-[#0B0B0B] border-t border-zinc-900"
+      className="relative bg-zinc-50/60 dark:bg-[#0B0B0B] border-t border-zinc-200/80 dark:border-zinc-900 transition-colors duration-300"
       style={{ height: reducedMotion ? 'auto' : '340vh' }}
     >
       {/* Sticky Viewport Container: stays centered and fully visible in view */}
@@ -193,38 +193,38 @@ export const HowItWorksSection: React.FC = () => {
         className={
           reducedMotion
             ? 'py-16 sm:py-24 px-4 sm:px-6 lg:px-8'
-            : 'sticky top-20 h-[calc(100vh-80px)] max-h-[calc(100dvh-80px)] flex flex-col justify-center px-4 sm:px-6 lg:px-8 overflow-hidden z-10'
+            : 'sticky top-20 min-h-[calc(100vh-80px)] flex flex-col justify-center py-4 sm:py-6 px-4 sm:px-6 lg:px-8 z-10'
         }
       >
         <div className="max-w-6xl mx-auto w-full flex flex-col justify-center">
           {/* Section Header */}
-          <div className="how-header text-center max-w-2xl mx-auto pt-3 sm:pt-6 pb-1 mb-5 sm:mb-7">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-white font-display mb-2.5">
+          <div className="how-header text-center max-w-2xl mx-auto mb-3 sm:mb-4">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-zinc-900 dark:text-white font-display mb-1.5">
               How It Works
             </h2>
-            <p className="text-zinc-400 text-xs sm:text-sm max-w-xl mx-auto leading-relaxed">
+            <p className="text-zinc-600 dark:text-zinc-400 text-xs sm:text-sm max-w-xl mx-auto leading-relaxed">
               Everyday AI runs entirely on your device. When an online task is needed, it only proceeds with your explicit permission.
             </p>
           </div>
 
           {/* Interactive Step Switcher Bar */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3.5 mb-3 sm:mb-4">
+          <div className="grid grid-cols-4 gap-2 sm:gap-3 mb-2.5 sm:mb-3">
             {steps.map((s, idx) => {
               const isActive = activeStepIndex === idx;
               return (
                 <button
                   key={s.step}
                   onClick={() => handleStepClick(idx)}
-                  className={`step-nav-item text-left p-3 sm:p-3.5 rounded-xl border transition-all duration-300 focus:outline-none focus:ring-1 focus:ring-[#FF2DA8] ${
+                  className={`step-nav-item text-left p-2 sm:p-3 rounded-xl border transition-all duration-300 focus:outline-none focus:ring-1 focus:ring-[#FF2DA8] ${
                     isActive
-                      ? 'bg-zinc-900/90 border-[#FF2DA8] shadow-lg shadow-[#FF2DA8]/15'
-                      : 'bg-zinc-950/50 border-zinc-800/80 hover:border-zinc-700 hover:bg-zinc-900/40 hover:-translate-y-0.5'
+                      ? 'bg-white dark:bg-zinc-900/90 border-[#FF2DA8] shadow-md shadow-[#FF2DA8]/15'
+                      : 'bg-white/80 dark:bg-zinc-950/50 border-zinc-200/90 dark:border-zinc-800/80 hover:border-zinc-300 dark:hover:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-900/40 hover:-translate-y-0.5'
                   }`}
                 >
-                  <div className="flex items-center justify-between mb-1.5">
+                  <div className="flex items-center justify-between mb-1">
                     <span
                       className={`font-mono text-xs sm:text-sm font-bold ${
-                        isActive ? 'text-[#FF2DA8]' : 'text-zinc-500'
+                        isActive ? 'text-[#FF2DA8]' : 'text-zinc-400 dark:text-zinc-500'
                       }`}
                     >
                       {s.step}
@@ -233,15 +233,15 @@ export const HowItWorksSection: React.FC = () => {
                       <span className="w-1.5 h-1.5 rounded-full bg-[#D4FF3F] glow-chartreuse-sm" />
                     )}
                   </div>
-                  <div className="font-semibold text-white text-xs sm:text-sm truncate">{s.title}</div>
-                  <div className="text-[11px] text-zinc-400 truncate hidden sm:block mt-0.5">{s.subtitle}</div>
+                  <div className="font-semibold text-zinc-900 dark:text-white text-xs sm:text-sm truncate">{s.title}</div>
+                  <div className="text-[11px] text-zinc-500 dark:text-zinc-400 truncate hidden sm:block mt-0.5">{s.subtitle}</div>
                 </button>
               );
             })}
           </div>
 
           {/* Synchronized Progress Track: 25% -> 50% -> 75% -> 100% */}
-          <div className="w-full bg-zinc-900/80 rounded-full h-1.5 mb-4 sm:mb-5 overflow-hidden relative border border-zinc-800/80">
+          <div className="w-full bg-zinc-200/80 dark:bg-zinc-900/80 rounded-full h-1.5 mb-3 sm:mb-4 overflow-hidden relative border border-zinc-300/80 dark:border-zinc-800/80">
             <div
               className="h-full bg-[#FF2DA8] transition-all duration-500 ease-out shadow-[0_0_12px_rgba(255,45,168,0.5)]"
               style={{ width: `${(activeStepIndex + 1) * 25}%` }}
@@ -251,15 +251,15 @@ export const HowItWorksSection: React.FC = () => {
           {/* Active Step Detailed Interactive Showcase Panel: fits comfortably without cutting off */}
           <div
             key={activeStepIndex}
-            className="animate-stepFadeIn grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-8 items-center glass-surface rounded-2xl p-5 sm:p-7 lg:p-8 shadow-2xl relative overflow-hidden"
+            className="animate-stepFadeIn grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-center glass-surface rounded-2xl p-4 sm:p-5 lg:p-6 shadow-xl relative overflow-hidden"
           >
             {/* Ambient Radial Glow */}
             <div className="absolute -right-20 -bottom-20 w-72 h-72 bg-[#FF2DA8]/10 rounded-full blur-[90px] pointer-events-none" />
 
             {/* Left: Description & Rules */}
-            <div className="lg:col-span-6 space-y-3.5 sm:space-y-4">
-              <div className="flex items-center gap-2.5">
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-semibold bg-zinc-900 border border-zinc-700 text-white">
+            <div className="lg:col-span-6 space-y-2.5 sm:space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-semibold bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white">
                   Step {currentStep.step} of 04
                 </span>
                 <span
@@ -274,21 +274,21 @@ export const HowItWorksSection: React.FC = () => {
               </div>
 
               <div>
-                <h3 className="text-xl sm:text-2xl font-bold text-white font-display mb-2">
+                <h3 className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-white font-display mb-1.5">
                   {currentStep.title}
                 </h3>
-                <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed">
+                <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed">
                   {currentStep.description}
                 </p>
               </div>
 
-              <div className="space-y-2 pt-1">
-                <h4 className="text-[11px] uppercase tracking-wider text-zinc-400 font-semibold mb-1.5">
+              <div className="space-y-1.5 pt-0.5">
+                <h4 className="text-[11px] uppercase tracking-wider text-zinc-500 dark:text-zinc-400 font-semibold mb-1">
                   Guaranteed Privacy Protections
                 </h4>
-                <ul className="space-y-1.5">
+                <ul className="space-y-1">
                   {currentStep.details.map((detail, i) => (
-                    <li key={i} className="flex items-center gap-2.5 text-xs sm:text-sm text-zinc-300">
+                    <li key={i} className="flex items-center gap-2 text-xs sm:text-sm text-zinc-700 dark:text-zinc-300">
                       <CheckCircle2 className="w-3.5 h-3.5 text-[#FF2DA8] shrink-0" />
                       <span>{detail}</span>
                     </li>
@@ -300,14 +300,14 @@ export const HowItWorksSection: React.FC = () => {
             {/* Right: Code & Architecture Simulation */}
             <div className="lg:col-span-6">
               <div className="rounded-xl overflow-hidden bg-[#0A0A0B] border border-zinc-800/90 shadow-xl font-mono text-[11px] sm:text-xs">
-                <div className="px-3.5 py-2 bg-zinc-900/80 border-b border-zinc-800 flex items-center justify-between text-zinc-400">
+                <div className="px-3 py-1.5 bg-zinc-900/80 border-b border-zinc-800 flex items-center justify-between text-zinc-400">
                   <div className="flex items-center gap-2">
                     <Terminal className="w-3.5 h-3.5 text-[#FF2DA8]" />
                     <span>aivarion_privacy_kernel.ts</span>
                   </div>
                   <span className="text-[10px] text-zinc-500">CLIENT_SANDBOX</span>
                 </div>
-                <pre className="p-3.5 sm:p-4 overflow-x-auto text-zinc-300 leading-relaxed selection:bg-[#FF2DA8] selection:text-white max-h-[170px] sm:max-h-[210px] overflow-y-auto">
+                <pre className="p-3 sm:p-3.5 overflow-x-auto text-zinc-300 leading-relaxed selection:bg-[#FF2DA8] selection:text-white max-h-[130px] sm:max-h-[150px] lg:max-h-[175px] overflow-y-auto">
                   <code>{currentStep.codeSnippet}</code>
                 </pre>
               </div>

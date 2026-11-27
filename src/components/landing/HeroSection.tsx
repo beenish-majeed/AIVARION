@@ -193,12 +193,12 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
   return (
     <section
       ref={heroRef}
-      className="hero-full-viewport relative flex flex-col items-center justify-start pt-24 sm:pt-28 md:pt-32 pb-safe px-4 sm:px-6 lg:px-8 overflow-hidden bg-[#0B0B0B]"
+      className="hero-full-viewport relative flex flex-col items-center justify-start pt-24 sm:pt-28 md:pt-32 pb-safe px-4 sm:px-6 lg:px-8 overflow-hidden bg-white dark:bg-[#0B0B0B] transition-colors duration-300"
     >
       {/* 3D Canvas filling the hero completely: position absolute, inset 0, width 100%, height 100% */}
       <div className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-hidden">
         {useStaticFallback ? (
-          <div className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden bg-[#0B0B0B]">
+          <div className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden bg-white dark:bg-[#0B0B0B]">
             {/* Ambient static radial glows */}
             <div className="absolute w-[600px] h-[600px] rounded-full bg-[#FF2DA8]/15 blur-[120px] pointer-events-none" />
             <div className="absolute w-[350px] h-[350px] rounded-full bg-[#FF2DA8]/25 blur-[60px] pointer-events-none" />
@@ -226,7 +226,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
         ) : (
           <WebGLErrorBoundary
             fallback={
-              <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-[#0B0B0B]">
+              <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-white dark:bg-[#0B0B0B]">
                 <div className="absolute w-[500px] h-[500px] rounded-full bg-[#FF2DA8]/15 blur-[100px] pointer-events-none" />
               </div>
             }
@@ -246,9 +246,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
         ref={showcaseContainerRef}
         className="relative z-10 text-center max-w-4xl mx-auto flex flex-col items-center justify-start pointer-events-auto will-change-transform mt-10 sm:mt-16 md:mt-24 mb-16 sm:mb-24 px-4"
       >
-        <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-light tracking-tight text-white font-serif leading-[1.25] max-w-3xl mx-auto select-none drop-shadow-[0_2px_18px_rgba(0,0,0,0.85)]">
+        <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-light tracking-tight text-zinc-900 dark:text-white font-serif leading-[1.25] max-w-3xl mx-auto select-none drop-shadow-[0_2px_18px_rgba(0,0,0,0.08)] dark:drop-shadow-[0_2px_18px_rgba(0,0,0,0.85)]">
           Your thoughts are yours. <br />
-          <span className="font-normal italic text-zinc-100">Your data should be, too.</span>
+          <span className="font-normal italic text-zinc-700 dark:text-zinc-100">Your data should be, too.</span>
         </h1>
       </div>
     </section>
