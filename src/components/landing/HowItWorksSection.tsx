@@ -97,7 +97,7 @@ export const HowItWorksSection: React.FC = () => {
     return () => motionQuery.removeEventListener('change', handleMotionChange);
   }, []);
 
-  // Continuous infinite horizontal conveyor belt movement
+  // Continuous infinite conveyor movement along curved horizontal arc
   // Moves slowly in one direction: cards exit on the RIGHT and re-enter on the LEFT
   const isPaused = isInteracting || activeFlippedIndex !== null || prefersReducedMotion;
 
@@ -182,6 +182,11 @@ export const HowItWorksSection: React.FC = () => {
   const totalSpan = steps.length * stride; // 1200px desktop, 968px mobile
   const halfSpan = totalSpan / 2; // 600px desktop, 484px mobile
 
+  // Arc curvature settings matching reference image
+  const arcDropMax = isMobile ? 22 : 36; // px vertical downward offset for outer cards
+  const arcDepthMax = isMobile ? 55 : 85; // px recession into depth for outer cards
+  const maxAngle = isMobile ? 18 : 22; // degrees inward Y rotation for outer cards
+
   return (
     <section
       id="how-it-works"
@@ -201,7 +206,7 @@ export const HowItWorksSection: React.FC = () => {
           </p>
         </div>
 
-        {/* Horizontal Infinite Conveyor Belt with Subtle Curved Perspective */}
+        {/* Horizontal Infinite Conveyor Belt along Smooth Curved Arc */}
         <div
           ref={containerRef}
           onMouseDown={(e) => handlePointerDown(e.clientX)}
@@ -211,7 +216,7 @@ export const HowItWorksSection: React.FC = () => {
           onTouchStart={(e) => handlePointerDown(e.touches[0].clientX)}
           onTouchMove={(e) => handlePointerMove(e.touches[0].clientX)}
           onTouchEnd={handlePointerUp}
-          className="relative w-full max-w-6xl h-[390px] sm:h-[430px] md:h-[450px] flex items-center justify-center select-none cursor-grab active:cursor-grabbing overflow-visible"
+          className="relative w-full max-w-6xl h-[420px] sm:h-[450px] md:h-[470px] flex items-center justify-center select-none cursor-grab active:cursor-grabbing overflow-visible"
           style={{
             perspective: '1200px',
             transformStyle: 'preserve-3d',
@@ -233,18 +238,22 @@ export const HowItWorksSection: React.FC = () => {
             if (x < 0) x += totalSpan;
             x -= halfSpan;
 
-            // Normalized position ratio u in [-1, 1] relative to halfSpan
+            // Normalized position ratio u in [-1, 1] relative to center
             const u = x / halfSpan;
             const absU = Math.min(1, Math.abs(u));
 
-            // Subtle curved perspective matching the reference image:
-            // Center cards face forward (rotateY = 0), outer cards angle slightly inward
-            const maxAngle = 24; // degrees
+            // Curved Arc Geometry matching the reference image:
+            // 1. Center cards are highest (translateY = 0); outer cards gradually drop downward along a smooth parabola
+            const translateY = Math.pow(absU, 1.8) * arcDropMax;
+
+            // 2. Center cards are closest (translateZ = 0); outer cards gently recede in depth
+            const translateZ = -Math.pow(absU, 1.4) * arcDepthMax;
+
+            // 3. Center cards face forward (rotateY = 0); outer cards turn gently inward with 3D perspective
             const rotateY = -u * maxAngle;
 
-            // Subtle depth and scale: center is prominent, outer cards recede slightly
-            const translateZ = -Math.pow(absU, 1.3) * 65; // px
-            const scale = 1 - Math.pow(absU, 1.2) * 0.12;
+            // 4. Center cards are slightly larger (scale 1.0); outer cards scale down slightly
+            const scale = 1 - Math.pow(absU, 1.3) * 0.12;
 
             // Natural edge fade: fully opaque across visible track, smoothly dissolves at boundary
             const edgeFade = absU > 0.82 ? Math.max(0, (1 - absU) / 0.18) : 1;
@@ -271,7 +280,7 @@ export const HowItWorksSection: React.FC = () => {
                 style={{
                   width: `${cardWidth}px`,
                   height: `${cardHeight}px`,
-                  transform: `translate3d(${x}px, 0px, ${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`,
+                  transform: `translate3d(${x}px, ${translateY}px, ${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`,
                   opacity: edgeFade,
                   zIndex,
                   transformStyle: 'preserve-3d',
