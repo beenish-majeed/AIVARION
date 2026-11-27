@@ -1,7 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   CheckCircle2,
   Terminal,
+  ChevronLeft,
+  ChevronRight,
+  RotateCw,
 } from 'lucide-react';
 
 interface StepData {
@@ -101,217 +104,346 @@ if (saveApproved) {
 ];
 
 export const HowItWorksSection: React.FC = () => {
-  const containerRef = useRef<HTMLElement>(null);
-  const [activeStepIndex, setActiveStepIndex] = useState(0);
-  const [reducedMotion, setReducedMotion] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isFlipped, setIsFlipped] = useState(false);
+  const [dragStartX, setDragStartX] = useState<number | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const carouselRef = useRef<HTMLDivElement>(null);
 
+  const totalSteps = steps.length;
+
+  const goToStep = useCallback((idx: number) => {
+    setActiveIndex((idx + totalSteps) % totalSteps);
+    setIsFlipped(false);
+  }, [totalSteps]);
+
+  const handleNext = useCallback(() => {
+    goToStep(activeIndex + 1);
+  }, [activeIndex, goToStep]);
+
+  const handlePrev = useCallback(() => {
+    goToStep(activeIndex - 1);
+  }, [activeIndex, goToStep]);
+
+  // Keyboard navigation
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setReducedMotion(motionQuery.matches);
-
-    const onMotionChange = (e: MediaQueryListEvent) => {
-      setReducedMotion(e.matches);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight') handleNext();
+      if (e.key === 'ArrowLeft') handlePrev();
     };
-    motionQuery.addEventListener('change', onMotionChange);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleNext, handlePrev]);
 
-    if (motionQuery.matches) {
-      return () => motionQuery.removeEventListener('change', onMotionChange);
-    }
-
-    let ticking = false;
-
-    const onScroll = () => {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(() => {
-        ticking = false;
-        if (!containerRef.current) return;
-        const rect = containerRef.current.getBoundingClientRect();
-        const topOffset = 80; // height of fixed navbar
-
-        // While user has not reached the sticky position, lock strictly to Step 1
-        if (rect.top > topOffset) {
-          setActiveStepIndex(0);
-          return;
-        }
-
-        const stickyHeight = window.innerHeight - topOffset;
-        const scrollableDist = rect.height - stickyHeight;
-        if (scrollableDist <= 0) return;
-
-        const scrolled = topOffset - rect.top;
-        const fraction = Math.max(0, Math.min(1, scrolled / scrollableDist));
-
-        // Sync steps across 4 equal scroll segments:
-        // [0.00, 0.25) -> Step 0 (Step 1 active, 25% progress)
-        // [0.25, 0.50) -> Step 1 (Step 2 active, 50% progress)
-        // [0.50, 0.75) -> Step 2 (Step 3 active, 75% progress)
-        // [0.75, 1.00] -> Step 3 (Step 4 active, 100% progress)
-        const step = Math.min(3, Math.floor(fraction * 3.99));
-        setActiveStepIndex(step);
-      });
-    };
-
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
-    onScroll();
-
-    return () => {
-      motionQuery.removeEventListener('change', onMotionChange);
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onScroll);
-    };
-  }, []);
-
-  const handleStepClick = (idx: number) => {
-    setActiveStepIndex(idx);
-    if (!containerRef.current || reducedMotion) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const topOffset = 80;
-    const stickyHeight = window.innerHeight - topOffset;
-    const scrollableDist = rect.height - stickyHeight;
-    if (scrollableDist <= 0) return;
-
-    // Scroll to the midpoint of the selected step's runway
-    const stepCenterFraction = (idx + 0.5) / 4;
-    const targetScrollY = window.scrollY + rect.top - topOffset + (stepCenterFraction * scrollableDist);
-    window.scrollTo({ top: targetScrollY, behavior: 'smooth' });
+  // Touch and mouse drag gestures for smooth carousel rotation
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setDragStartX(e.touches[0].clientX);
+    setIsDragging(true);
   };
 
-  const currentStep = steps[activeStepIndex];
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (dragStartX === null) return;
+    const diff = e.changedTouches[0].clientX - dragStartX;
+    if (Math.abs(diff) > 40) {
+      if (diff > 0) handlePrev();
+      else handleNext();
+    }
+    setDragStartX(null);
+    setIsDragging(false);
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setDragStartX(e.clientX);
+    setIsDragging(true);
+  };
+
+  const handleMouseUp = (e: React.MouseEvent) => {
+    if (dragStartX === null) return;
+    const diff = e.clientX - dragStartX;
+    if (Math.abs(diff) > 40) {
+      if (diff > 0) handlePrev();
+      else handleNext();
+    }
+    setDragStartX(null);
+    setIsDragging(false);
+  };
 
   return (
     <section
-      ref={containerRef}
       id="how-it-works"
-      className="relative bg-zinc-50/60 dark:bg-[#0B0B0B] border-t border-zinc-200/80 dark:border-zinc-900 transition-colors duration-300"
-      style={{ height: reducedMotion ? 'auto' : '340vh' }}
+      className="relative py-24 sm:py-32 lg:py-36 px-4 sm:px-6 lg:px-8 border-t border-zinc-200/80 dark:border-zinc-900 bg-zinc-50/70 dark:bg-[#0B0B0B] transition-colors duration-300 overflow-hidden"
     >
-      {/* Sticky Viewport Container: stays centered and fully visible in view */}
-      <div
-        className={
-          reducedMotion
-            ? 'py-16 sm:py-24 px-4 sm:px-6 lg:px-8'
-            : 'sticky top-20 min-h-[calc(100vh-80px)] flex flex-col justify-center py-4 sm:py-6 px-4 sm:px-6 lg:px-8 z-10'
-        }
-      >
-        <div className="max-w-6xl mx-auto w-full flex flex-col justify-center">
-          {/* Section Header */}
-          <div className="how-header text-center max-w-2xl mx-auto mb-3 sm:mb-4">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-zinc-900 dark:text-white font-display mb-1.5">
-              How It Works
-            </h2>
-            <p className="text-zinc-600 dark:text-zinc-400 text-xs sm:text-sm max-w-xl mx-auto leading-relaxed">
-              Everyday AI runs entirely on your device. When an online task is needed, it only proceeds with your explicit permission.
-            </p>
-          </div>
+      {/* Ambient Radial Glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#FF2DA8]/10 rounded-full blur-[140px] pointer-events-none" />
 
-          {/* Interactive Step Switcher Bar */}
-          <div className="grid grid-cols-4 gap-2 sm:gap-3 mb-2.5 sm:mb-3">
-            {steps.map((s, idx) => {
-              const isActive = activeStepIndex === idx;
-              return (
-                <button
-                  key={s.step}
-                  onClick={() => handleStepClick(idx)}
-                  className={`step-nav-item text-left p-2 sm:p-3 rounded-xl border transition-all duration-300 focus:outline-none focus:ring-1 focus:ring-[#FF2DA8] ${
-                    isActive
-                      ? 'bg-white dark:bg-zinc-900/90 border-[#FF2DA8] shadow-md shadow-[#FF2DA8]/15'
-                      : 'bg-white/80 dark:bg-zinc-950/50 border-zinc-200/90 dark:border-zinc-800/80 hover:border-zinc-300 dark:hover:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-900/40 hover:-translate-y-0.5'
-                  }`}
+      <div className="max-w-6xl mx-auto w-full relative z-10">
+        {/* Section Header */}
+        <div className="how-header text-center max-w-2xl mx-auto mb-12 sm:mb-16">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900 text-xs font-medium text-zinc-700 dark:text-zinc-300 shadow-sm mb-4">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#FF2DA8]" />
+            <span>Interactive 3D Pipeline</span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-zinc-900 dark:text-white font-display mb-3">
+            How It Works
+          </h2>
+          <p className="text-zinc-600 dark:text-zinc-400 text-sm sm:text-base leading-relaxed max-w-xl mx-auto">
+            Everyday AI runs entirely on your device. When an online task is needed, it only proceeds with your explicit permission.
+          </p>
+        </div>
+
+        {/* Step Quick Selector Bar */}
+        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mb-8 sm:mb-12">
+          {steps.map((s, idx) => {
+            const isActive = activeIndex === idx;
+            return (
+              <button
+                key={s.step}
+                onClick={() => goToStep(idx)}
+                className={`flex items-center gap-2 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 focus:outline-none focus:ring-1 focus:ring-[#FF2DA8] ${
+                  isActive
+                    ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white border border-[#FF2DA8] shadow-md shadow-[#FF2DA8]/20 scale-105'
+                    : 'bg-white/80 dark:bg-zinc-950/60 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-800/80 hover:text-zinc-900 dark:hover:text-white hover:border-zinc-300 dark:hover:border-zinc-700'
+                }`}
+              >
+                <span className={`font-mono text-xs ${isActive ? 'text-[#FF2DA8]' : 'text-zinc-400 dark:text-zinc-500'}`}>
+                  {s.step}
+                </span>
+                <span>{s.title}</span>
+                {isActive && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#D4FF3F] glow-chartreuse-sm" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* 3D Circular Orbit Carousel Stage */}
+        <div
+          ref={carouselRef}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          onMouseDown={handleMouseDown}
+          onMouseUp={handleMouseUp}
+          className="relative w-full max-w-4xl mx-auto h-[460px] sm:h-[490px] md:h-[520px] flex items-center justify-center select-none"
+          style={{ perspective: '1400px' }}
+        >
+          {steps.map((stepItem, idx) => {
+            const rawOffset = idx - activeIndex;
+            const offset = ((((rawOffset % 4) + 4) + 2) % 4) - 2;
+            const isActive = offset === 0;
+            const isLeft = offset === -1;
+            const isRight = offset === 1;
+            const isBack = !isActive && !isLeft && !isRight;
+
+            const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
+            const wingX = isMobile ? 115 : 240;
+            const translateX = isActive || isBack ? 0 : isLeft ? -wingX : wingX;
+            const translateZ = isActive ? 80 : isBack ? -220 : -90;
+            const rotateY = isActive ? 0 : isBack ? 180 : isLeft ? 28 : -28;
+            const scale = isActive ? 1.04 : isBack ? 0.72 : 0.86;
+            const opacity = isActive ? 1 : isBack ? 0.18 : 0.58;
+            const zIndex = isActive ? 30 : isBack ? 10 : 20;
+            const isCardFlipped = isActive && isFlipped;
+
+            return (
+              <div
+                key={stepItem.step}
+                onClick={() => { if (!isActive) goToStep(idx); }}
+                className={`absolute w-[305px] sm:w-[380px] md:w-[440px] h-[390px] sm:h-[410px] md:h-[430px] rounded-3xl cursor-pointer transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                  isActive ? 'cursor-default' : 'hover:opacity-80'
+                }`}
+                style={{
+                  transform: `translate3d(${translateX}px, 0px, ${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`,
+                  opacity,
+                  zIndex,
+                  transformStyle: 'preserve-3d',
+                  pointerEvents: isBack ? 'none' : 'auto',
+                }}
+              >
+                {/* 3D Flip Container */}
+                <div
+                  className="w-full h-full relative transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
+                  style={{
+                    transformStyle: 'preserve-3d',
+                    transform: isCardFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+                  }}
                 >
-                  <div className="flex items-center justify-between mb-1">
-                    <span
-                      className={`font-mono text-xs sm:text-sm font-bold ${
-                        isActive ? 'text-[#FF2DA8]' : 'text-zinc-400 dark:text-zinc-500'
-                      }`}
-                    >
-                      {s.step}
-                    </span>
-                    {isActive && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#D4FF3F] glow-chartreuse-sm" />
-                    )}
+                  {/* FRONT FACE: Step Overview & Visual Benefit */}
+                  <div
+                    className={`absolute inset-0 w-full h-full rounded-3xl p-6 sm:p-7 flex flex-col justify-between glass-surface border shadow-2xl overflow-hidden [backface-visibility:hidden] ${
+                      isActive
+                        ? 'border-[#FF2DA8]/60 shadow-[0_0_40px_rgba(255,45,168,0.18)] dark:bg-[#121215]/95 bg-white/95'
+                        : 'border-zinc-200 dark:border-zinc-800/80 bg-white/80 dark:bg-zinc-950/80'
+                    }`}
+                  >
+                    {/* Top Pill & Badge Bar */}
+                    <div>
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                          <span className="w-8 h-8 rounded-xl bg-[#FF2DA8]/10 border border-[#FF2DA8]/20 flex items-center justify-center font-mono font-bold text-xs text-[#FF2DA8]">
+                            {stepItem.step}
+                          </span>
+                          <span
+                            className="px-2.5 py-0.5 rounded text-[11px] font-mono border"
+                            style={{
+                              borderColor: stepItem.badgeColor,
+                              color: stepItem.badgeColor,
+                            }}
+                          >
+                            {stepItem.badge}
+                          </span>
+                        </div>
+                        {isActive && (
+                          <span className="w-2 h-2 rounded-full bg-[#D4FF3F] glow-chartreuse-sm" />
+                        )}
+                      </div>
+
+                      {/* Title & Subtitle */}
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!isActive) goToStep(idx);
+                        }}
+                        className="text-left w-full cursor-pointer"
+                      >
+                        <h3 className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-white font-display mb-1">
+                          {stepItem.title}
+                        </h3>
+                        <p className="text-xs font-medium text-[#FF2DA8] mb-3">
+                          {stepItem.subtitle}
+                        </p>
+                      </div>
+
+                      {/* Description */}
+                      <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed mb-4">
+                        {stepItem.description}
+                      </p>
+
+                      {/* Privacy Details Checklist */}
+                      <ul className="space-y-2">
+                        {stepItem.details.map((detail, i) => (
+                          <li key={i} className="flex items-center gap-2 text-xs text-zinc-700 dark:text-zinc-300">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-[#FF2DA8] shrink-0" />
+                            <span className="truncate">{detail}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* Bottom Action: Flip to Code & Architecture */}
+                    <div className="pt-3 border-t border-zinc-200/80 dark:border-zinc-800/80 flex items-center justify-between">
+                      {isActive ? (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setIsFlipped(true);
+                          }}
+                          className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-semibold bg-[#FF2DA8]/10 hover:bg-[#FF2DA8] text-[#FF2DA8] hover:text-white transition-all duration-300 border border-[#FF2DA8]/30 shadow-sm"
+                        >
+                          <Terminal className="w-3.5 h-3.5" />
+                          <span>Flip to Inspect Code & Sandbox</span>
+                          <RotateCw className="w-3 h-3 ml-1" />
+                        </button>
+                      ) : (
+                        <div className="w-full text-center text-[11px] font-mono text-zinc-400">
+                          Click to bring to center
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div className="font-semibold text-zinc-900 dark:text-white text-xs sm:text-sm truncate">{s.title}</div>
-                  <div className="text-[11px] text-zinc-500 dark:text-zinc-400 truncate hidden sm:block mt-0.5">{s.subtitle}</div>
-                </button>
-              );
-            })}
+
+                  {/* BACK FACE: Detailed Code Terminal & Simulation */}
+                  <div
+                    className={`absolute inset-0 w-full h-full rounded-3xl p-5 sm:p-6 flex flex-col justify-between glass-surface border shadow-2xl overflow-hidden [backface-visibility:hidden] [transform:rotateY(180deg)] ${
+                      isActive
+                        ? 'border-[#FF2DA8]/60 shadow-[0_0_40px_rgba(255,45,168,0.18)] dark:bg-[#0E0E12] bg-zinc-900 text-white'
+                        : 'border-zinc-800 bg-[#0E0E12] text-white'
+                    }`}
+                  >
+                    <div>
+                      {/* Back Header */}
+                      <div className="flex items-center justify-between pb-3 mb-3 border-b border-zinc-800">
+                        <div className="flex items-center gap-2">
+                          <Terminal className="w-4 h-4 text-[#FF2DA8]" />
+                          <span className="font-mono text-xs font-semibold text-zinc-200">
+                            aivarion_kernel_step_{stepItem.step}.ts
+                          </span>
+                        </div>
+                        <span className="text-[10px] font-mono text-[#D4FF3F] bg-[#D4FF3F]/10 px-2 py-0.5 rounded border border-[#D4FF3F]/20">
+                          VERIFIED
+                        </span>
+                      </div>
+
+                      {/* Code Snippet Box */}
+                      <div className="rounded-xl overflow-hidden bg-[#050507] border border-zinc-800/90 shadow-inner font-mono text-[11px] sm:text-xs">
+                        <pre className="p-3.5 sm:p-4 overflow-x-auto text-zinc-300 leading-relaxed max-h-[200px] sm:max-h-[220px] overflow-y-auto selection:bg-[#FF2DA8] selection:text-white">
+                          <code>{stepItem.codeSnippet}</code>
+                        </pre>
+                      </div>
+
+                      {/* Architecture rule footer */}
+                      <div className="mt-3 text-[11px] text-zinc-400 flex items-center justify-between font-mono">
+                        <span>Rule: {stepItem.badge}</span>
+                        <span className="text-[#D4FF3F]">100% Deterministic</span>
+                      </div>
+                    </div>
+
+                    {/* Back Button */}
+                    <div className="pt-3 border-t border-zinc-800">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsFlipped(false);
+                        }}
+                        className="w-full inline-flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-xs font-semibold bg-zinc-800 hover:bg-zinc-700 text-zinc-200 transition-all border border-zinc-700"
+                      >
+                        <RotateCw className="w-3.5 h-3.5" />
+                        <span>Flip Back to Step Overview</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Carousel Bottom Controls & Synchronized Progress Bar */}
+        <div className="mt-8 flex flex-col items-center justify-center gap-4">
+          {/* Previous / Next Circular Buttons */}
+          <div className="flex items-center gap-4">
+            <button
+              onClick={handlePrev}
+              className="p-3 rounded-full border border-zinc-200 dark:border-zinc-800 bg-white/90 dark:bg-zinc-900/90 hover:border-[#FF2DA8] hover:text-[#FF2DA8] text-zinc-700 dark:text-zinc-300 transition-all duration-300 shadow-md focus:outline-none focus:ring-1 focus:ring-[#FF2DA8]"
+              aria-label="Previous step"
+              title="Previous step"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+
+            {/* Step Counter Indicator */}
+            <div className="font-mono text-xs font-semibold text-zinc-600 dark:text-zinc-400 px-3">
+              Step <span className="text-[#FF2DA8] font-bold">{steps[activeIndex].step}</span> of 04
+            </div>
+
+            <button
+              onClick={handleNext}
+              className="p-3 rounded-full border border-zinc-200 dark:border-zinc-800 bg-white/90 dark:bg-zinc-900/90 hover:border-[#FF2DA8] hover:text-[#FF2DA8] text-zinc-700 dark:text-zinc-300 transition-all duration-300 shadow-md focus:outline-none focus:ring-1 focus:ring-[#FF2DA8]"
+              aria-label="Next step"
+              title="Next step"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
           </div>
 
           {/* Synchronized Progress Track: 25% -> 50% -> 75% -> 100% */}
-          <div className="w-full bg-zinc-200/80 dark:bg-zinc-900/80 rounded-full h-1.5 mb-3 sm:mb-4 overflow-hidden relative border border-zinc-300/80 dark:border-zinc-800/80">
+          <div className="w-48 sm:w-64 bg-zinc-200/80 dark:bg-zinc-900/80 rounded-full h-1.5 overflow-hidden relative border border-zinc-300/80 dark:border-zinc-800/80">
             <div
               className="h-full bg-[#FF2DA8] transition-all duration-500 ease-out shadow-[0_0_12px_rgba(255,45,168,0.5)]"
-              style={{ width: `${(activeStepIndex + 1) * 25}%` }}
+              style={{ width: `${(activeIndex + 1) * 25}%` }}
             />
-          </div>
-
-          {/* Active Step Detailed Interactive Showcase Panel: fits comfortably without cutting off */}
-          <div
-            key={activeStepIndex}
-            className="animate-stepFadeIn grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-center glass-surface rounded-2xl p-4 sm:p-5 lg:p-6 shadow-xl relative overflow-hidden"
-          >
-            {/* Ambient Radial Glow */}
-            <div className="absolute -right-20 -bottom-20 w-72 h-72 bg-[#FF2DA8]/10 rounded-full blur-[90px] pointer-events-none" />
-
-            {/* Left: Description & Rules */}
-            <div className="lg:col-span-6 space-y-2.5 sm:space-y-3">
-              <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-semibold bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white">
-                  Step {currentStep.step} of 04
-                </span>
-                <span
-                  className="px-2 py-0.5 rounded text-[11px] font-mono border"
-                  style={{
-                    borderColor: currentStep.badgeColor,
-                    color: currentStep.badgeColor,
-                  }}
-                >
-                  {currentStep.badge}
-                </span>
-              </div>
-
-              <div>
-                <h3 className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-white font-display mb-1.5">
-                  {currentStep.title}
-                </h3>
-                <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed">
-                  {currentStep.description}
-                </p>
-              </div>
-
-              <div className="space-y-1.5 pt-0.5">
-                <h4 className="text-[11px] uppercase tracking-wider text-zinc-500 dark:text-zinc-400 font-semibold mb-1">
-                  Guaranteed Privacy Protections
-                </h4>
-                <ul className="space-y-1">
-                  {currentStep.details.map((detail, i) => (
-                    <li key={i} className="flex items-center gap-2 text-xs sm:text-sm text-zinc-700 dark:text-zinc-300">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-[#FF2DA8] shrink-0" />
-                      <span>{detail}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            {/* Right: Code & Architecture Simulation */}
-            <div className="lg:col-span-6">
-              <div className="rounded-xl overflow-hidden bg-[#0A0A0B] border border-zinc-800/90 shadow-xl font-mono text-[11px] sm:text-xs">
-                <div className="px-3 py-1.5 bg-zinc-900/80 border-b border-zinc-800 flex items-center justify-between text-zinc-400">
-                  <div className="flex items-center gap-2">
-                    <Terminal className="w-3.5 h-3.5 text-[#FF2DA8]" />
-                    <span>aivarion_privacy_kernel.ts</span>
-                  </div>
-                  <span className="text-[10px] text-zinc-500">CLIENT_SANDBOX</span>
-                </div>
-                <pre className="p-3 sm:p-3.5 overflow-x-auto text-zinc-300 leading-relaxed selection:bg-[#FF2DA8] selection:text-white max-h-[130px] sm:max-h-[150px] lg:max-h-[175px] overflow-y-auto">
-                  <code>{currentStep.codeSnippet}</code>
-                </pre>
-              </div>
-            </div>
           </div>
         </div>
       </div>
