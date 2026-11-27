@@ -13,28 +13,50 @@ describe('AIVARION Phase 2 Landing Page Tests', () => {
     expect(screen.getAllByText('Privacy Check').length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText('User Approval').length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText('Saved Result').length).toBeGreaterThanOrEqual(1);
+
+    expect(screen.getByText('Runs on your device')).toBeInTheDocument();
+    expect(screen.getByText('Automatic protection')).toBeInTheDocument();
+    expect(screen.getByText('Your explicit permission')).toBeInTheDocument();
+    expect(screen.getByText('Stored in your vault')).toBeInTheDocument();
   });
 
-  it('allows clicking different steps to inspect their rules and code payload simulation', () => {
+  it('allows clicking and hovering cards to inspect their verified rules and descriptions', () => {
     render(<HowItWorksSection />);
 
-    // Default step is Step 1 (Local Answer)
+    // All 4 badges exist on back faces
     expect(screen.getAllByText(/ONLY_ON_DEVICE/i).length).toBeGreaterThanOrEqual(1);
-
-    // Click Step 2: Privacy Check
-    const step2Button = screen.getByRole('button', { name: /Privacy Check/i });
-    fireEvent.click(step2Button);
     expect(screen.getAllByText(/PII_REDACTOR_ACTIVE/i).length).toBeGreaterThanOrEqual(1);
-
-    // Click Step 3: User Approval
-    const step3Button = screen.getByRole('button', { name: /User Approval/i });
-    fireEvent.click(step3Button);
     expect(screen.getAllByText(/EXPLICIT_APPROVAL_REQUIRED/i).length).toBeGreaterThanOrEqual(1);
-
-    // Click Step 4: Saved Result
-    const step4Button = screen.getByRole('button', { name: /Saved Result/i });
-    fireEvent.click(step4Button);
     expect(screen.getAllByText(/ZOD_VALIDATED_WRITE/i).length).toBeGreaterThanOrEqual(1);
+
+    // Card 2: Privacy Check
+    const card2 = screen.getByRole('button', { name: /Privacy Check/i });
+    expect(card2).toBeInTheDocument();
+
+    // Click/tap toggles flip
+    fireEvent.click(card2);
+    expect(screen.getByText(/Before you choose to run any online task/i)).toBeInTheDocument();
+
+    // Click/tap again flips back
+    fireEvent.click(card2);
+
+    // Card 3: User Approval
+    const card3 = screen.getByRole('button', { name: /User Approval/i });
+    fireEvent.click(card3);
+    expect(screen.getByText(/Nothing gets sent without your permission/i)).toBeInTheDocument();
+  });
+
+  it('supports drag gestures on the 3D circular carousel container', () => {
+    const { container } = render(<HowItWorksSection />);
+    const stage = container.querySelector('.cursor-grab');
+    expect(stage).toBeInTheDocument();
+
+    if (stage) {
+      // Simulate pointer drag gesture
+      fireEvent.mouseDown(stage, { clientX: 200 });
+      fireEvent.mouseMove(stage, { clientX: 120 });
+      fireEvent.mouseUp(stage);
+    }
   });
 
   it('activates static hero fallback when prefers-reduced-motion is requested', () => {
