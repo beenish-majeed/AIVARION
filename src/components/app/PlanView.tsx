@@ -154,46 +154,46 @@ export const PlanView: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#0B0B0B] overflow-y-auto p-4 sm:p-8">
+    <div className="flex-1 flex flex-col h-full bg-zinc-50 dark:bg-[#0B0B0B] text-zinc-900 dark:text-white overflow-y-auto p-4 sm:p-8 transition-colors duration-300">
       <div className="max-w-4xl mx-auto w-full space-y-8">
         {/* Module Header */}
-        <div className="p-6 rounded-2xl bg-zinc-900/60 border border-zinc-800 space-y-2">
+        <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 space-y-2 shadow-sm">
           <div className="flex items-center gap-2">
             <CalendarCheck className="w-5 h-5 text-[#FF2DA8]" />
-            <h1 className="text-xl font-bold text-white font-display">
+            <h1 className="text-xl font-bold text-zinc-900 dark:text-white font-display">
               Guarded 7-Day Cloud Study Planner
             </h1>
           </div>
-          <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">
+          <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
             Harness cloud intelligence strictly governed by two human approval gates: (1) inspect and approve sanitized payload before transmission, and (2) approve or reject saving tasks to Firestore.
           </p>
         </div>
 
         {/* Offline Pending Cloud Requests Queue */}
         {pendingRequests.length > 0 && (
-          <div className="p-6 rounded-2xl bg-[#141416] border border-amber-500/30 shadow-xl space-y-4">
+          <div className="p-6 rounded-2xl bg-white dark:bg-[#141416] border border-amber-500/30 shadow-xl space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <WifiOff className="w-5 h-5 text-amber-400" />
-                <h2 className="text-base font-bold text-white font-display">
+                <WifiOff className="w-5 h-5 text-amber-500" />
+                <h2 className="text-base font-bold text-zinc-900 dark:text-white font-display">
                   Offline Pending Cloud Requests ({pendingRequests.length})
                 </h2>
               </div>
-              <span className="text-[11px] font-mono uppercase px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20">
+              <span className="text-[11px] font-mono uppercase px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-300 border border-amber-500/20">
                 Manual Sync Required
               </span>
             </div>
-            <p className="text-xs text-zinc-400 leading-relaxed">
-              These requests were queued locally while offline. For your privacy, AIVARION will <strong className="text-zinc-200">never automatically transmit</strong> pending requests when connectivity returns. Each retry requires explicit preview inspection and dual human approval.
+            <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+              These requests were queued locally while offline. For your privacy, AIVARION will <strong className="text-zinc-800 dark:text-zinc-200">never automatically transmit</strong> pending requests when connectivity returns. Each retry requires explicit preview inspection and dual human approval.
             </p>
             <div className="space-y-3 pt-2">
               {pendingRequests.map((req) => (
                 <div
                   key={req.id}
-                  className="p-4 rounded-xl bg-zinc-900/80 border border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                  className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                 >
                   <div className="space-y-1">
-                    <div className="text-sm font-semibold text-white">
+                    <div className="text-sm font-semibold text-zinc-900 dark:text-white">
                       {req.sanitizedPayload.topic}
                     </div>
                     <div className="text-xs text-zinc-500 flex items-center gap-2 font-mono">
@@ -216,7 +216,7 @@ export const PlanView: React.FC = () => {
                     <button
                       onClick={() => handleDiscardPending(req.id)}
                       disabled={isGenerating}
-                      className="p-2 rounded-full border border-zinc-700 text-zinc-400 hover:text-red-400 hover:border-red-500/50 text-xs transition-colors"
+                      className="p-2 rounded-full border border-zinc-300 dark:border-zinc-700 text-zinc-500 hover:text-red-500 text-xs transition-colors"
                       title="Discard queued request"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -229,10 +229,10 @@ export const PlanView: React.FC = () => {
         )}
 
         {/* Input Configuration Form */}
-        <div className="p-6 sm:p-8 rounded-2xl bg-[#141416] border border-zinc-800 shadow-xl space-y-6">
+        <div className="p-6 sm:p-8 rounded-2xl bg-white dark:bg-[#141416] border border-zinc-200 dark:border-zinc-800 shadow-xl space-y-6">
           <form onSubmit={handleInitiatePlanRequest} className="space-y-5">
             <div className="space-y-2">
-              <label className="text-xs font-semibold uppercase tracking-wider text-zinc-300">
+              <label className="text-xs font-semibold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
                 Study Topic / Target Focus
               </label>
               <input
@@ -241,7 +241,7 @@ export const PlanView: React.FC = () => {
                 onChange={(e) => setTopicInput(e.target.value)}
                 placeholder="e.g. Python AsyncIO & Networking, Data Engineering Fundamentals..."
                 required
-                className="w-full bg-[#18181B] text-sm text-white placeholder-zinc-500 rounded-xl px-4 py-3 border border-zinc-700/80 focus:outline-none focus:ring-2 focus:ring-[#FF2DA8]"
+                className="w-full bg-zinc-50 dark:bg-[#18181B] text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 rounded-xl px-4 py-3 border border-zinc-200 dark:border-zinc-700/80 focus:outline-none focus:ring-2 focus:ring-[#FF2DA8]"
               />
             </div>
 

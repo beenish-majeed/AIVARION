@@ -317,7 +317,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#0B0B0B] overflow-hidden relative">
+    <div className="flex-1 flex flex-col h-full bg-zinc-50 dark:bg-[#0B0B0B] text-zinc-900 dark:text-white overflow-hidden relative transition-colors duration-300">
       {/* Messages Thread Container */}
       <div
         className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6"
@@ -336,14 +336,14 @@ export const ChatView: React.FC<ChatViewProps> = ({
                 className={`max-w-2xl rounded-2xl p-4 sm:p-5 transition-all text-sm leading-relaxed ${
                   isUser
                     ? 'bg-[#FF2DA8] text-white rounded-br-none shadow-md shadow-[#FF2DA8]/20'
-                    : 'bg-[#18181B] text-zinc-100 border border-zinc-800 rounded-bl-none shadow-lg'
+                    : 'bg-white dark:bg-[#18181B] text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-800 rounded-bl-none shadow-sm dark:shadow-lg'
                 }`}
               >
                 {/* Message Body */}
                 <div className="whitespace-pre-wrap">{msg.content}</div>
 
                 {/* Inference Source & Metadata Footer */}
-                <div className="mt-3 pt-2.5 border-t border-zinc-700/50 flex items-center justify-between gap-4 text-[11px] text-zinc-400">
+                <div className="mt-3 pt-2.5 border-t border-zinc-200 dark:border-zinc-700/50 flex items-center justify-between gap-4 text-[11px] text-zinc-500 dark:text-zinc-400">
                   <div className="flex items-center gap-2">
                     {msg.inferenceSource ? (
                       <span
@@ -656,7 +656,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
       )}
 
       {/* Input Bar Form */}
-      <div className="p-4 bg-[#121214] border-t border-zinc-800/80">
+      <div className="p-4 bg-white dark:bg-[#121214] border-t border-zinc-200 dark:border-zinc-800/80 transition-colors">
         <form onSubmit={handleSendMessage} className="max-w-4xl mx-auto flex items-center gap-3">
           <div className="relative flex-1">
             <input
@@ -672,7 +672,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
                   : 'Ask anything (preview approval required before transmission)...'
               }
               disabled={isLoading}
-              className="w-full bg-[#18181B] text-white placeholder-zinc-500 rounded-full py-3.5 pl-5 pr-12 text-sm border border-zinc-700/80 focus:outline-none focus:ring-2 focus:ring-[#FF2DA8] focus:border-transparent transition-all disabled:opacity-50"
+              className="w-full bg-zinc-100 dark:bg-[#18181B] text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 rounded-full py-3.5 pl-5 pr-12 text-sm border border-zinc-200 dark:border-zinc-700/80 focus:outline-none focus:ring-2 focus:ring-[#FF2DA8] focus:border-transparent transition-all disabled:opacity-50"
             />
           </div>
 

@@ -75,31 +75,31 @@ export const LearnView: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#0B0B0B] overflow-y-auto p-4 sm:p-8">
+    <div className="flex-1 flex flex-col h-full bg-zinc-50 dark:bg-[#0B0B0B] text-zinc-900 dark:text-white overflow-y-auto p-4 sm:p-8 transition-colors duration-300">
       <div className="max-w-4xl mx-auto w-full space-y-8">
         {/* Header with Stats Dashboard */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-2xl bg-zinc-900/60 border border-zinc-800">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-2xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 shadow-sm">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <GraduationCap className="w-5 h-5 text-[#D4FF3F]" />
-              <h1 className="text-xl font-bold text-white font-display">Python Basics Skill Coach</h1>
+              <h1 className="text-xl font-bold text-zinc-900 dark:text-white font-display">Python Basics Skill Coach</h1>
             </div>
-            <p className="text-xs text-zinc-400">
+            <p className="text-xs text-zinc-600 dark:text-zinc-400">
               Generated locally on-device • Deterministic code evaluation • 100% private
             </p>
           </div>
 
           <div className="flex items-center gap-6">
             <div className="text-center">
-              <div className="text-xs text-zinc-400">Completed</div>
-              <div className="text-lg font-bold text-white font-mono">{stats.totalAttempts}</div>
+              <div className="text-xs text-zinc-500 dark:text-zinc-400">Completed</div>
+              <div className="text-lg font-bold text-zinc-900 dark:text-white font-mono">{stats.totalAttempts}</div>
             </div>
             <div className="text-center">
-              <div className="text-xs text-zinc-400">Correct</div>
+              <div className="text-xs text-zinc-500 dark:text-zinc-400">Correct</div>
               <div className="text-lg font-bold text-[#D4FF3F] font-mono">{stats.correctCount}</div>
             </div>
             <div className="text-center">
-              <div className="text-xs text-zinc-400">Accuracy</div>
+              <div className="text-xs text-zinc-500 dark:text-zinc-400">Accuracy</div>
               <div className="text-lg font-bold text-[#FF2DA8] font-mono">{stats.accuracyRate}%</div>
             </div>
           </div>
@@ -107,7 +107,7 @@ export const LearnView: React.FC = () => {
 
         {/* Loading State */}
         {isLoading && (
-          <div className="p-16 rounded-2xl bg-[#141416] border border-zinc-800 flex flex-col items-center justify-center text-center space-y-3">
+          <div className="p-16 rounded-2xl bg-white dark:bg-[#141416] border border-zinc-200 dark:border-zinc-800 flex flex-col items-center justify-center text-center space-y-3 shadow-sm">
             <Loader2 className="w-8 h-8 animate-spin text-[#FF2DA8]" />
             <div className="text-sm font-medium text-white">Synthesizing Python Question on Device...</div>
             <div className="text-xs text-zinc-500 font-mono">Zod Schema Validation Pipeline Active</div>
@@ -131,17 +131,17 @@ export const LearnView: React.FC = () => {
 
         {/* Active Quiz Card */}
         {!isLoading && !loadError && currentQuestion && (
-          <div className="p-6 sm:p-8 rounded-2xl bg-[#141416] border border-zinc-800 shadow-2xl space-y-6">
+          <div className="p-6 sm:p-8 rounded-2xl bg-white dark:bg-[#141416] border border-zinc-200 dark:border-zinc-800 shadow-xl space-y-6">
             {/* Question Text */}
             <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs text-zinc-400 font-mono">
+              <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 font-mono">
                 <span>QUESTION {stats.totalAttempts + 1}</span>
                 <span className="text-[#D4FF3F] flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#D4FF3F]" />
                   <span>ON_DEVICE_VALIDATED</span>
                 </span>
               </div>
-              <h2 className="text-lg sm:text-xl font-bold text-white leading-relaxed">
+              <h2 className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-white leading-relaxed">
                 {currentQuestion.question}
               </h2>
             </div>
@@ -151,18 +151,18 @@ export const LearnView: React.FC = () => {
               {currentQuestion.options.map((opt, idx) => {
                 const isSelected = selectedOption === idx;
                 let optionStyle =
-                  'bg-zinc-900/80 border-zinc-800 hover:border-zinc-700 text-zinc-200';
+                  'bg-zinc-50 dark:bg-zinc-900/80 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 text-zinc-800 dark:text-zinc-200';
 
                 if (isAnswered) {
                   if (idx === currentQuestion.correctIndex) {
-                    optionStyle = 'bg-[#D4FF3F]/15 border-[#D4FF3F] text-[#D4FF3F]';
+                    optionStyle = 'bg-[#D4FF3F]/15 border-[#D4FF3F] text-zinc-900 dark:text-[#D4FF3F] font-semibold';
                   } else if (isSelected && !currentAttempt?.isCorrect) {
-                    optionStyle = 'bg-red-950/40 border-red-500 text-red-200';
+                    optionStyle = 'bg-red-50 dark:bg-red-950/40 border-red-500 text-red-700 dark:text-red-200';
                   } else {
-                    optionStyle = 'bg-zinc-950/50 border-zinc-800 text-zinc-500 opacity-60';
+                    optionStyle = 'bg-zinc-100 dark:bg-zinc-950/50 border-zinc-200 dark:border-zinc-800 text-zinc-400 opacity-60';
                   }
                 } else if (isSelected) {
-                  optionStyle = 'bg-[#FF2DA8]/20 border-[#FF2DA8] text-white shadow-md shadow-[#FF2DA8]/10';
+                  optionStyle = 'bg-[#FF2DA8]/10 dark:bg-[#FF2DA8]/20 border-[#FF2DA8] text-zinc-900 dark:text-white shadow-md shadow-[#FF2DA8]/10 font-semibold';
                 }
 
                 return (
@@ -173,7 +173,7 @@ export const LearnView: React.FC = () => {
                     className={`w-full text-left p-4 rounded-xl border text-sm font-medium transition-all duration-200 flex items-center justify-between focus:outline-none focus:ring-1 focus:ring-[#FF2DA8] ${optionStyle}`}
                   >
                     <div className="flex items-center gap-3">
-                      <span className="w-6 h-6 rounded-lg bg-zinc-800 text-xs font-mono flex items-center justify-center shrink-0">
+                      <span className="w-6 h-6 rounded-lg bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 text-xs font-mono flex items-center justify-center shrink-0">
                         {String.fromCharCode(65 + idx)}
                       </span>
                       <span>{opt}</span>

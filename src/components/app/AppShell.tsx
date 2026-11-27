@@ -16,7 +16,10 @@ import {
   Cpu,
   ArrowLeft,
   Lock,
+  Sun,
+  Moon,
 } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
 import logoImg from '../../assets/aivarion-logo.png';
 import iconImg from '../../assets/aivarion-icon.png';
 import {
@@ -47,6 +50,7 @@ export const AppShell: React.FC<AppShellProps> = ({
   onNavigateHome,
   initialTab = 'chat',
 }) => {
+  const { theme, toggleTheme } = useTheme();
   const [activeTab, setActiveTab] = useState<'chat' | 'learn' | 'notes' | 'plan' | 'settings'>(initialTab);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
@@ -136,23 +140,23 @@ export const AppShell: React.FC<AppShellProps> = ({
   };
 
   return (
-    <div className="flex h-screen bg-[#0B0B0B] text-white overflow-hidden">
+    <div className="flex h-screen bg-white dark:bg-[#0B0B0B] text-zinc-900 dark:text-white overflow-hidden transition-colors duration-300">
       {/* ChatGPT-style Left Sidebar */}
-      <aside className="w-64 bg-[#141416] border-r border-zinc-800 flex flex-col justify-between shrink-0">
+      <aside className="w-64 bg-zinc-50 dark:bg-[#141416] border-r border-zinc-200 dark:border-zinc-800 flex flex-col justify-between shrink-0 transition-colors duration-300">
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Brand header */}
-          <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
+          <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
             <button
               onClick={onNavigateHome}
               className="flex items-center gap-2.5 text-left group focus:outline-none"
               title="Return to Landing Page"
             >
               <img src={iconImg} alt="AIVARION" className="h-7 w-auto object-contain" />
-              <span className="font-bold text-sm tracking-wider text-white font-display">AIVARION</span>
+              <span className="font-bold text-sm tracking-wider text-zinc-900 dark:text-white font-display">AIVARION</span>
             </button>
             <button
               onClick={onNavigateHome}
-              className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
+              className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
               title="Back to Landing Page"
               aria-label="Back to Landing Page"
             >
@@ -172,13 +176,13 @@ export const AppShell: React.FC<AppShellProps> = ({
           </div>
 
           {/* Primary Workspace Navigation Tabs */}
-          <nav className="px-3 pb-3 border-b border-zinc-800/80 space-y-1">
+          <nav className="px-3 pb-3 border-b border-zinc-200 dark:border-zinc-800/80 space-y-1">
             <button
               onClick={() => setActiveTab('chat')}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
                 activeTab === 'chat'
-                  ? 'bg-zinc-800 text-white border border-zinc-700'
-                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60'
+                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white border border-zinc-200 dark:border-zinc-700 shadow-sm'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
               }`}
             >
               <MessageSquare className="w-4 h-4 text-[#FF2DA8]" />
@@ -189,8 +193,8 @@ export const AppShell: React.FC<AppShellProps> = ({
               onClick={() => setActiveTab('learn')}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
                 activeTab === 'learn'
-                  ? 'bg-zinc-800 text-white border border-zinc-700'
-                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60'
+                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white border border-zinc-200 dark:border-zinc-700 shadow-sm'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
               }`}
             >
               <GraduationCap className="w-4 h-4 text-[#D4FF3F]" />
@@ -201,11 +205,11 @@ export const AppShell: React.FC<AppShellProps> = ({
               onClick={() => setActiveTab('notes')}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
                 activeTab === 'notes'
-                  ? 'bg-zinc-800 text-white border border-zinc-700'
-                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60'
+                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white border border-zinc-200 dark:border-zinc-700 shadow-sm'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
               }`}
             >
-              <FileText className="w-4 h-4 text-zinc-300" />
+              <FileText className="w-4 h-4 text-zinc-400" />
               <span>Personal Notes</span>
             </button>
 
@@ -213,8 +217,8 @@ export const AppShell: React.FC<AppShellProps> = ({
               onClick={() => setActiveTab('plan')}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
                 activeTab === 'plan'
-                  ? 'bg-zinc-800 text-white border border-zinc-700'
-                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60'
+                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white border border-zinc-200 dark:border-zinc-700 shadow-sm'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
               }`}
             >
               <CalendarCheck className="w-4 h-4 text-[#FF2DA8]" />
@@ -225,8 +229,8 @@ export const AppShell: React.FC<AppShellProps> = ({
               onClick={() => setActiveTab('settings')}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
                 activeTab === 'settings'
-                  ? 'bg-zinc-800 text-white border border-zinc-700'
-                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60'
+                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white border border-zinc-200 dark:border-zinc-700 shadow-sm'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
               }`}
             >
               <Settings className="w-4 h-4 text-zinc-400" />
@@ -236,7 +240,7 @@ export const AppShell: React.FC<AppShellProps> = ({
 
           {/* Conversation History List */}
           <div className="flex-1 overflow-y-auto p-3 space-y-1">
-            <div className="px-2 py-1 text-[10px] font-mono uppercase tracking-wider text-zinc-500 font-semibold">
+            <div className="px-2 py-1 text-[10px] font-mono uppercase tracking-wider text-zinc-400 dark:text-zinc-500 font-semibold">
               Recent Chats
             </div>
             {conversations.map((conv) => {
@@ -252,12 +256,12 @@ export const AppShell: React.FC<AppShellProps> = ({
                   }}
                   className={`group flex items-center justify-between px-3 py-2 rounded-xl text-xs cursor-pointer transition-all ${
                     isActive && activeTab === 'chat'
-                      ? 'bg-zinc-800/90 text-white border border-zinc-700'
-                      : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
+                      ? 'bg-white dark:bg-zinc-800/90 text-zinc-900 dark:text-white border border-zinc-200 dark:border-zinc-700 shadow-sm'
+                      : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900'
                   }`}
                 >
                   <div className="flex items-center gap-2 truncate flex-1">
-                    <MessageSquare className="w-3.5 h-3.5 shrink-0 text-zinc-500" />
+                    <MessageSquare className="w-3.5 h-3.5 shrink-0 text-zinc-400 dark:text-zinc-500" />
                     {isEditing ? (
                       <input
                         type="text"
@@ -272,7 +276,7 @@ export const AppShell: React.FC<AppShellProps> = ({
                             setEditingConvId(null);
                           }
                         }}
-                        className="bg-zinc-900 text-white border border-[#FF2DA8] rounded px-1.5 py-0.5 text-xs w-full focus:outline-none"
+                        className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white border border-[#FF2DA8] rounded px-1.5 py-0.5 text-xs w-full focus:outline-none"
                         autoFocus
                       />
                     ) : (
@@ -295,7 +299,7 @@ export const AppShell: React.FC<AppShellProps> = ({
                             e.stopPropagation();
                             setEditingConvId(null);
                           }}
-                          className="p-1 hover:text-zinc-300"
+                          className="p-1 hover:text-zinc-600 dark:hover:text-zinc-300"
                           title="Cancel"
                         >
                           <X className="w-3 h-3" />
@@ -305,14 +309,14 @@ export const AppShell: React.FC<AppShellProps> = ({
                       <>
                         <button
                           onClick={(e) => handleStartRename(conv, e)}
-                          className="p-1 hover:text-white text-zinc-500"
+                          className="p-1 hover:text-zinc-900 dark:hover:text-white text-zinc-400"
                           title="Rename"
                         >
                           <Edit2 className="w-3 h-3" />
                         </button>
                         <button
                           onClick={(e) => handleDeleteConversation(conv.id, e)}
-                          className="p-1 hover:text-red-400 text-zinc-500"
+                          className="p-1 hover:text-red-500 text-zinc-400"
                           title="Delete"
                         >
                           <Trash2 className="w-3 h-3" />
@@ -327,8 +331,8 @@ export const AppShell: React.FC<AppShellProps> = ({
         </div>
 
         {/* Sidebar Status Footer */}
-        <div className="p-3.5 border-t border-zinc-800 space-y-2.5 bg-[#0F0F10]">
-          <div className="flex items-center justify-between text-xs text-zinc-400">
+        <div className="p-3.5 border-t border-zinc-200 dark:border-zinc-800 space-y-2.5 bg-zinc-100/90 dark:bg-[#0F0F10] transition-colors">
+          <div className="flex items-center justify-between text-xs text-zinc-600 dark:text-zinc-400">
             <span className="flex items-center gap-1.5">
               <Shield className="w-3.5 h-3.5 text-[#FF2DA8]" />
               <span className="capitalize">{currentMode.replace('_', ' ')}</span>
@@ -341,10 +345,10 @@ export const AppShell: React.FC<AppShellProps> = ({
               <Cpu className="w-3.5 h-3.5 text-zinc-400" />
               <span>On-Device AI</span>
             </span>
-            <span className="text-zinc-300 capitalize text-[11px] font-mono">{deviceStatus}</span>
+            <span className="text-zinc-700 dark:text-zinc-300 capitalize text-[11px] font-mono">{deviceStatus}</span>
           </div>
 
-          <div className="flex items-center justify-between text-xs text-zinc-500 pt-1 border-t border-zinc-800/60">
+          <div className="flex items-center justify-between text-xs text-zinc-500 pt-1 border-t border-zinc-200 dark:border-zinc-800/60">
             <span className="flex items-center gap-1.5">
               {isOnline ? (
                 <Wifi className="w-3.5 h-3.5 text-[#D4FF3F]" />
@@ -353,39 +357,39 @@ export const AppShell: React.FC<AppShellProps> = ({
               )}
               <span>{isOnline ? 'Online' : 'Offline'}</span>
             </span>
-            <span className="text-[10px] text-zinc-500 font-mono">Dexie IndexedDB</span>
+            <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-mono">Dexie IndexedDB</span>
           </div>
         </div>
       </aside>
 
       {/* Main Workspace Active View Panel */}
-      <main className="flex-1 flex flex-col bg-[#0B0B0B] overflow-hidden">
+      <main className="flex-1 flex flex-col bg-zinc-50 dark:bg-[#0B0B0B] overflow-hidden transition-colors duration-300">
         {/* Workspace Top Header */}
-        <header className="h-16 border-b border-zinc-800/80 px-6 flex items-center justify-between bg-[#141416]/60 backdrop-blur-sm">
+        <header className="h-16 border-b border-zinc-200 dark:border-zinc-800/80 px-6 flex items-center justify-between bg-white/90 dark:bg-[#141416]/60 backdrop-blur-sm transition-colors">
           <div className="flex items-center gap-3">
-            <h2 className="text-base font-semibold capitalize text-white">
+            <h2 className="text-base font-semibold capitalize text-zinc-900 dark:text-white">
               {activeTab === 'chat' && (activeConversation?.title || 'Private Local Chat')}
               {activeTab === 'learn' && 'Python Basics Skill Coach'}
               {activeTab === 'notes' && 'Offline Personal Notes'}
               {activeTab === 'plan' && 'Guarded 7-Day Cloud Plan'}
               {activeTab === 'settings' && 'Workspace & Privacy Settings'}
             </h2>
-            <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-zinc-800 text-zinc-300 border border-zinc-700">
+            <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
               {currentMode === 'private_local' && 'ONLY_ON_DEVICE'}
               {currentMode === 'hybrid_auto' && 'PREFER_ON_DEVICE'}
               {currentMode === 'cloud' && 'ONLY_IN_CLOUD'}
             </span>
           </div>
 
-          {/* AI Mode Selector Buttons in Header */}
-          <div className="flex items-center gap-2">
-            <div className="flex items-center bg-zinc-900 border border-zinc-800 rounded-full p-1 text-xs">
+          {/* AI Mode Selector Buttons & Theme Switcher in Header */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full p-1 text-xs">
               <button
                 onClick={() => setCurrentMode('private_local')}
                 className={`px-3 py-1 rounded-full font-medium transition-all ${
                   currentMode === 'private_local'
                     ? 'bg-[#FF2DA8] text-white shadow-sm'
-                    : 'text-zinc-400 hover:text-white'
+                    : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
                 }`}
               >
                 Private Local
@@ -395,7 +399,7 @@ export const AppShell: React.FC<AppShellProps> = ({
                 className={`px-3 py-1 rounded-full font-medium transition-all ${
                   currentMode === 'hybrid_auto'
                     ? 'bg-[#FF2DA8] text-white shadow-sm'
-                    : 'text-zinc-400 hover:text-white'
+                    : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
                 }`}
               >
                 Hybrid Auto
@@ -405,12 +409,26 @@ export const AppShell: React.FC<AppShellProps> = ({
                 className={`px-3 py-1 rounded-full font-medium transition-all ${
                   currentMode === 'cloud'
                     ? 'bg-[#FF2DA8] text-white shadow-sm'
-                    : 'text-zinc-400 hover:text-white'
+                    : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
                 }`}
               >
                 Cloud
               </button>
             </div>
+
+            {/* Dark & Light Mode Toggle */}
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-full text-zinc-500 hover:text-zinc-900 dark:hover:text-white border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all focus:outline-none"
+              title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              aria-label="Toggle dark and light mode"
+            >
+              {theme === 'dark' ? (
+                <Sun className="w-4 h-4 text-[#D4FF3F]" />
+              ) : (
+                <Moon className="w-4 h-4 text-[#FF2DA8]" />
+              )}
+            </button>
           </div>
         </header>
 

@@ -46,23 +46,23 @@ export const PayloadPreviewModal: React.FC<PayloadPreviewModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 dark:bg-black/85 backdrop-blur-md animate-fadeIn"
       role="dialog"
       aria-modal="true"
       aria-labelledby="preview-modal-title"
     >
-      <div className="bg-[#121214] border border-zinc-700/80 rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="bg-white dark:bg-[#121214] border border-zinc-200 dark:border-zinc-700/80 rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh] text-zinc-900 dark:text-white transition-colors">
         {/* Modal Top Header */}
-        <div className="p-5 border-b border-zinc-800 bg-zinc-900/60 flex items-center justify-between">
+        <div className="p-5 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/60 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-[#FF2DA8]/15 border border-[#FF2DA8]/30 flex items-center justify-center text-[#FF2DA8]">
               <Eye className="w-4 h-4" />
             </div>
             <div>
-              <h3 id="preview-modal-title" className="text-sm font-bold text-white font-display">
+              <h3 id="preview-modal-title" className="text-sm font-bold text-zinc-900 dark:text-white font-display">
                 {title}
               </h3>
-              <div className="text-[11px] text-zinc-400 font-mono">
+              <div className="text-[11px] text-zinc-500 dark:text-zinc-400 font-mono">
                 TARGET: {targetEndpoint}
               </div>
             </div>
@@ -70,7 +70,7 @@ export const PayloadPreviewModal: React.FC<PayloadPreviewModalProps> = ({
 
           <button
             onClick={onCancel}
-            className="p-1.5 rounded-lg text-zinc-500 hover:text-white hover:bg-zinc-800 transition-colors"
+            className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
             title="Cancel"
             aria-label="Cancel"
           >
@@ -131,15 +131,15 @@ export const PayloadPreviewModal: React.FC<PayloadPreviewModalProps> = ({
         </div>
 
         {/* Modal Bottom Actions */}
-        <div className="p-5 border-t border-zinc-800 bg-[#0F0F10] flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="text-[11px] text-zinc-400 font-mono">
+        <div className="p-5 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-[#0F0F10] flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="text-[11px] text-zinc-500 dark:text-zinc-400 font-mono">
             Zero background requests • Action blocked until approval
           </div>
 
           <div className="flex items-center gap-3 w-full sm:w-auto">
             <button
               onClick={onCancel}
-              className="flex-1 sm:flex-initial px-5 py-2.5 rounded-full border border-zinc-700 hover:border-zinc-500 text-zinc-300 hover:text-white text-xs font-semibold transition-all focus:outline-none focus:ring-1 focus:ring-zinc-500"
+              className="flex-1 sm:flex-initial px-5 py-2.5 rounded-full border border-zinc-300 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-500 text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white text-xs font-semibold transition-all focus:outline-none focus:ring-1 focus:ring-zinc-500"
             >
               Cancel (Abort Request)
             </button>

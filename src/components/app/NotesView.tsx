@@ -87,14 +87,14 @@ export const NotesView: React.FC = () => {
   );
 
   return (
-    <div className="flex-1 flex h-full bg-[#0B0B0B] overflow-hidden">
+    <div className="flex-1 flex h-full bg-white dark:bg-[#0B0B0B] text-zinc-900 dark:text-white overflow-hidden transition-colors duration-300">
       {/* Left Column: Notes List & Search */}
-      <div className="w-72 bg-[#121214] border-r border-zinc-800 flex flex-col shrink-0">
-        <div className="p-4 border-b border-zinc-800 space-y-3">
+      <div className="w-72 bg-zinc-50 dark:bg-[#121214] border-r border-zinc-200 dark:border-zinc-800 flex flex-col shrink-0 transition-colors">
+        <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <FileText className="w-4 h-4 text-[#FF2DA8]" />
-              <h2 className="text-sm font-bold text-white font-display">Personal Notes</h2>
+              <h2 className="text-sm font-bold text-zinc-900 dark:text-white font-display">Personal Notes</h2>
             </div>
             <button
               onClick={handleCreateNewNote}
@@ -108,13 +108,13 @@ export const NotesView: React.FC = () => {
 
           {/* Search bar */}
           <div className="relative">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-zinc-500" />
+            <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-zinc-400 dark:text-zinc-500" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search local notes..."
-              className="w-full bg-[#18181B] text-xs text-white placeholder-zinc-500 rounded-lg pl-8 pr-3 py-2 border border-zinc-800 focus:outline-none focus:ring-1 focus:ring-[#FF2DA8]"
+              className="w-full bg-white dark:bg-[#18181B] text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 rounded-lg pl-8 pr-3 py-2 border border-zinc-200 dark:border-zinc-800 focus:outline-none focus:ring-1 focus:ring-[#FF2DA8]"
             />
           </div>
         </div>
@@ -129,17 +129,17 @@ export const NotesView: React.FC = () => {
                 onClick={() => handleSelectNote(note)}
                 className={`w-full text-left p-3 rounded-xl transition-all ${
                   isActive
-                    ? 'bg-zinc-800 text-white border border-zinc-700 shadow-sm'
-                    : 'text-zinc-400 hover:text-white hover:bg-zinc-900 border border-transparent'
+                    ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white border border-zinc-200 dark:border-zinc-700 shadow-sm'
+                    : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900 border border-transparent'
                 }`}
               >
-                <div className="font-semibold text-xs text-white truncate mb-1">
+                <div className="font-semibold text-xs text-zinc-900 dark:text-white truncate mb-1">
                   {note.title || 'Untitled Note'}
                 </div>
-                <div className="text-[11px] text-zinc-500 truncate mb-1">
+                <div className="text-[11px] text-zinc-500 dark:text-zinc-400 truncate mb-1">
                   {note.content || 'No additional content'}
                 </div>
-                <div className="text-[10px] text-zinc-600 font-mono">
+                <div className="text-[10px] text-zinc-400 dark:text-zinc-600 font-mono">
                   {new Date(note.updatedAt).toLocaleDateString()}
                 </div>
               </button>
@@ -154,7 +154,7 @@ export const NotesView: React.FC = () => {
         </div>
 
         {/* Bottom Local Storage Verification Indicator */}
-        <div className="p-3 border-t border-zinc-800/80 bg-[#0E0E10] text-[11px] text-zinc-500 flex items-center justify-between font-mono">
+        <div className="p-3 border-t border-zinc-200 dark:border-zinc-800/80 bg-zinc-100/80 dark:bg-[#0E0E10] text-[11px] text-zinc-500 flex items-center justify-between font-mono">
           <span className="flex items-center gap-1.5">
             <Lock className="w-3 h-3 text-[#D4FF3F]" />
             <span>IndexedDB Local Only</span>
@@ -164,11 +164,11 @@ export const NotesView: React.FC = () => {
       </div>
 
       {/* Right Column: Note Editor */}
-      <div className="flex-1 flex flex-col bg-[#0B0B0B] overflow-hidden">
+      <div className="flex-1 flex flex-col bg-white dark:bg-[#0B0B0B] overflow-hidden transition-colors">
         {activeNoteId ? (
           <>
             {/* Editor Top Toolbar */}
-            <div className="p-4 border-b border-zinc-800 flex items-center justify-between bg-[#141416]/50">
+            <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between bg-zinc-50/70 dark:bg-[#141416]/50">
               <input
                 type="text"
                 value={titleInput}
@@ -177,7 +177,7 @@ export const NotesView: React.FC = () => {
                   setIsSaved(false);
                 }}
                 placeholder="Note title..."
-                className="bg-transparent text-lg font-bold text-white placeholder-zinc-600 focus:outline-none flex-1 font-display"
+                className="bg-transparent text-lg font-bold text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none flex-1 font-display"
               />
 
               <div className="flex items-center gap-3">
@@ -185,7 +185,7 @@ export const NotesView: React.FC = () => {
                   onClick={handleSaveCurrentNote}
                   className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
                     isSaved
-                      ? 'bg-zinc-800 text-zinc-400'
+                      ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700'
                       : 'bg-[#FF2DA8] hover:bg-[#E02094] text-white shadow-md shadow-[#FF2DA8]/20'
                   }`}
                 >
@@ -195,7 +195,7 @@ export const NotesView: React.FC = () => {
 
                 <button
                   onClick={handleDeleteCurrentNote}
-                  className="p-2 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-zinc-800 transition-colors"
+                  className="p-2 rounded-lg text-zinc-400 hover:text-red-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                   title="Delete Note"
                   aria-label="Delete Note"
                 >
