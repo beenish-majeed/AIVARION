@@ -31,7 +31,9 @@ import {
 } from '../../db';
 import {
   executeOnDeviceInference,
+  executeHybridInference,
   executeCloudInference,
+  initializeOnDeviceModel,
   extractRecentTurns,
   assembleContextPrompt,
   checkDeviceModelAvailability,
@@ -72,6 +74,9 @@ export const ChatView: React.FC<ChatViewProps> = ({
     engineName: 'On-Device AI',
     details: 'Checking engine capabilities...',
   });
+
+  // Device model download progress (0-100)
+  const [downloadProgress, setDownloadProgress] = useState<number | null>(null);
 
   // Non-dead-end status for on-device unavailability
   const [localUnavailableAlert, setLocalUnavailableAlert] = useState<{
@@ -164,7 +169,9 @@ export const ChatView: React.FC<ChatViewProps> = ({
       setIsLoading(true);
       try {
         const availability = await checkDeviceModelAvailability();
-        if (availability.status !== 'ready') {
+        if (availability.status === 'downloading') {
+          await initializeOnDeviceModel((prog) => setDownloadProgress(prog));
+        } else if (availability.status !== 'ready') {
           // Do NOT show a dead-end message: show reason & offer switch to Cloud mode
           setLocalUnavailableAlert({
             status: availability.status,
@@ -177,7 +184,10 @@ export const ChatView: React.FC<ChatViewProps> = ({
 
         const recentTurns = extractRecentTurns(messages, 4);
         const formattedPrompt = assembleContextPrompt(recentTurns, prompt);
-        const result = await executeOnDeviceInference(formattedPrompt);
+        const result = await executeOnDeviceInference(
+          formattedPrompt,
+          (prog) => setDownloadProgress(prog)
+        );
 
         const assistantMsg: ChatMessage = {
           id: `msg_a_${Date.now()}`,
@@ -205,29 +215,30 @@ export const ChatView: React.FC<ChatViewProps> = ({
     } else if (currentMode === 'hybrid_auto') {
       setIsLoading(true);
       try {
-        const availability = await checkDeviceModelAvailability();
-        if (availability.status === 'ready') {
-          const recentTurns = extractRecentTurns(messages, 4);
-          const formattedPrompt = assembleContextPrompt(recentTurns, prompt);
-          const result = await executeOnDeviceInference(formattedPrompt);
+        const recentTurns = extractRecentTurns(messages, 4);
+        const formattedPrompt = assembleContextPrompt(recentTurns, prompt);
+        // Step 1: Try on-device inference first with cloud fallback disabled
+        const result = await executeHybridInference(
+          formattedPrompt,
+          false,
+          (prog) => setDownloadProgress(prog)
+        );
 
-          const assistantMsg: ChatMessage = {
-            id: `msg_a_${Date.now()}`,
-            conversationId: conversation.id,
-            role: 'assistant',
-            content: result.text,
-            createdAt: Date.now(),
-            inferenceSource: result.inferenceSource,
-            modeUsed: 'hybrid_auto',
-          };
+        const assistantMsg: ChatMessage = {
+          id: `msg_a_${Date.now()}`,
+          conversationId: conversation.id,
+          role: 'assistant',
+          content: result.text,
+          createdAt: Date.now(),
+          inferenceSource: result.inferenceSource,
+          modeUsed: 'hybrid_auto',
+        };
 
-          setMessages((prev) => [...prev, assistantMsg]);
-          await saveMessage(assistantMsg);
-        } else {
-          // On-device unavailable in hybrid mode: stage preview approval gate
-          stageCloudApproval(prompt);
-        }
-      } catch {
+        setMessages((prev) => [...prev, assistantMsg]);
+        await saveMessage(assistantMsg);
+      } catch (err: unknown) {
+        // Step 2: On-device failed or unavailable: stage preview approval gate for cloud fallback
+        console.warn('Smart Hybrid local attempt failed; requesting user permission for cloud fallback:', err);
         stageCloudApproval(prompt);
       } finally {
         setIsLoading(false);
@@ -265,7 +276,10 @@ export const ChatView: React.FC<ChatViewProps> = ({
     setCloudError(null);
 
     try {
-      const result = await executeCloudInference(finalPrompt);
+      const result =
+        currentMode === 'hybrid_auto'
+          ? await executeHybridInference(finalPrompt, true)
+          : await executeCloudInference(finalPrompt);
 
       const assistantMsg: ChatMessage = {
         id: `msg_a_${Date.now()}`,
@@ -275,7 +289,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
         createdAt: Date.now(),
         // Real inference source returned by the SDK
         inferenceSource: result.inferenceSource,
-        modeUsed: 'cloud',
+        modeUsed: currentMode,
         sanitized: true,
       };
 
@@ -415,6 +429,34 @@ export const ChatView: React.FC<ChatViewProps> = ({
           </div>
         )}
 
+        {/* Model Download Progress Indicator */}
+        {(downloadProgress !== null || deviceInfo.status === 'downloading') && (
+          <div
+            className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-200 text-xs shadow-md space-y-2"
+            role="status"
+            aria-live="polite"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 font-semibold">
+                <Loader2 className="w-4 h-4 animate-spin text-amber-500" />
+                <span>Downloading On-Device Gemini Nano Model</span>
+              </div>
+              <span className="font-mono text-[11px] text-amber-600 dark:text-amber-400">
+                {downloadProgress !== null ? `${downloadProgress}%` : 'In Progress...'}
+              </span>
+            </div>
+            <div className="w-full bg-amber-200/50 dark:bg-amber-950/60 rounded-full h-2 overflow-hidden border border-amber-500/20">
+              <div
+                className="bg-amber-500 h-full transition-all duration-300"
+                style={{ width: `${downloadProgress ?? 15}%` }}
+              />
+            </div>
+            <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
+              Browser component download managed by Chrome. Please keep this tab open during download.
+            </p>
+          </div>
+        )}
+
         {/* 1. On-Device Unavailable Non-Dead-End Notification */}
         {localUnavailableAlert && (
           <div
@@ -530,7 +572,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
                     Review Payload Before Cloud Transmission
                   </h3>
                   <div className="text-[11px] text-zinc-400 font-mono">
-                    TARGET: Google Cloud / Firebase AI Logic (gemini-1.5-flash)
+                    TARGET: Google Cloud / Firebase AI Logic (gemini-2.5-flash)
                   </div>
                 </div>
               </div>

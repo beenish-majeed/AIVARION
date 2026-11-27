@@ -31,28 +31,72 @@ export interface DeviceAvailabilityInfo {
   details: string;
 }
 
+// Detect Chrome Desktop 139 or newer
+export function isChromeDesktop139OrNewer(): {
+  isChrome: boolean;
+  isVersion139Plus: boolean;
+  version?: number;
+} {
+  if (typeof navigator === 'undefined') {
+    return { isChrome: false, isVersion139Plus: false };
+  }
+  const ua = navigator.userAgent;
+  const chromeMatch = /Chrome\/([0-9]+)/.exec(ua);
+  if (!chromeMatch) {
+    return { isChrome: false, isVersion139Plus: false };
+  }
+  const version = parseInt(chromeMatch[1], 10);
+  return {
+    isChrome: true,
+    isVersion139Plus: version >= 139,
+    version,
+  };
+}
+
 // Check Chrome Prompt API and Firebase AI Logic device model availability
 export async function checkDeviceModelAvailability(): Promise<DeviceAvailabilityInfo> {
-  // Check Chrome Prompt API (Gemini Nano) directly if available in browser
+  // 1. Check Chrome Prompt API (Gemini Nano) directly if available in browser
   if (typeof window !== 'undefined') {
     // @ts-expect-error - Chrome Built-in AI Prompt API
     const aiApi = window.ai || (window as unknown as { ChromeAI?: unknown }).ChromeAI;
 
     if (aiApi?.languageModel) {
       try {
-        const capabilities = await aiApi.languageModel.capabilities();
-        if (capabilities?.available === 'readily') {
-          return {
-            status: 'ready',
-            engineName: 'Chrome Gemini Nano (On-Device)',
-            details: 'Model is downloaded and ready for zero-latency local inference.',
-          };
-        } else if (capabilities?.available === 'after-download') {
-          return {
-            status: 'downloading',
-            engineName: 'Chrome Gemini Nano (On-Device)',
-            details: 'Device model download in progress via browser components.',
-          };
+        if (typeof aiApi.languageModel.capabilities === 'function') {
+          const capabilities = await aiApi.languageModel.capabilities();
+          if (capabilities?.available === 'readily') {
+            return {
+              status: 'ready',
+              engineName: 'Chrome Gemini Nano (On-Device)',
+              details: 'Model is downloaded and ready for zero-latency local inference.',
+            };
+          } else if (capabilities?.available === 'after-download') {
+            return {
+              status: 'downloading',
+              engineName: 'Chrome Gemini Nano (On-Device)',
+              details: 'Device model download in progress via browser components.',
+            };
+          }
+        }
+        if (typeof aiApi.languageModel.availability === 'function') {
+          const avail = await aiApi.languageModel.availability();
+          if (avail === 'readily' || avail === 'available') {
+            return {
+              status: 'ready',
+              engineName: 'Chrome Gemini Nano (On-Device)',
+              details: 'Model is downloaded and ready for zero-latency local inference.',
+            };
+          } else if (
+            avail === 'after-download' ||
+            avail === 'downloadable' ||
+            avail === 'downloading'
+          ) {
+            return {
+              status: 'downloading',
+              engineName: 'Chrome Gemini Nano (On-Device)',
+              details: 'Device model download required or in progress.',
+            };
+          }
         }
       } catch (err) {
         console.warn('Error reading Chrome AI languageModel capabilities:', err);
@@ -60,34 +104,71 @@ export async function checkDeviceModelAvailability(): Promise<DeviceAvailability
     }
   }
 
-  // Check Firebase AI Logic initializeDeviceModel
-  if (aiService && typeof (aiService as unknown as { initializeDeviceModel?: unknown }).initializeDeviceModel === 'function') {
-    try {
-      // @ts-expect-error - Firebase AI Logic device init
-      await aiService.initializeDeviceModel();
-      return {
-        status: 'ready',
-        engineName: 'Firebase AI Logic (On-Device)',
-        details: 'On-device model initialized and ready.',
-      };
-    } catch (err: unknown) {
-      const errMsg = err instanceof Error ? err.message : String(err);
-      if (errMsg.includes('download')) {
-        return {
-          status: 'downloading',
-          engineName: 'Firebase AI Logic',
-          details: 'Model downloading onto client device.',
-        };
+  // 2. Check if running in Chrome Desktop 139+
+  const chromeCheck = isChromeDesktop139OrNewer();
+  let details =
+    'On-device Gemini Nano requires Chrome Desktop 139+ with Prompt API enabled (chrome://flags/#prompt-api-for-gemini-nano).';
+  if (!chromeCheck.isChrome) {
+    details =
+      'Unsupported browser for on-device inference. Please use Google Chrome Desktop version 139 or newer.';
+  } else if (!chromeCheck.isVersion139Plus) {
+    details = `Chrome version ${chromeCheck.version ?? 'detected'} is older than version 139. Please update Google Chrome Desktop.`;
+  }
+
+  return {
+    status: 'unavailable',
+    engineName: 'Chrome Prompt API (Gemini Nano)',
+    details,
+  };
+}
+
+// Explicit on-device model initialization with progress monitoring
+export async function initializeOnDeviceModel(
+  onProgress?: (progressValue: number) => void
+): Promise<void> {
+  // 1. Direct Chrome Prompt API download monitor (Chrome 139+)
+  if (typeof window !== 'undefined') {
+    // @ts-expect-error - Chrome Prompt API
+    const aiApi = window.ai;
+    if (aiApi?.languageModel?.create) {
+      try {
+        const session = await aiApi.languageModel.create({
+          monitor(m: EventTarget) {
+            m.addEventListener('downloadprogress', (e: Event) => {
+              const pe = e as ProgressEvent;
+              if (pe.total && onProgress) {
+                onProgress(Math.round((pe.loaded / pe.total) * 100));
+              }
+            });
+          },
+        });
+        session.destroy?.();
+        return;
+      } catch (chromeErr) {
+        console.warn('Chrome Prompt API initialization note:', chromeErr);
+        throw chromeErr;
       }
     }
   }
 
-  // If no on-device model found
-  return {
-    status: 'unavailable',
-    engineName: 'Chrome Prompt API (Gemini Nano)',
-    details: 'On-device Gemini Nano requires Chrome Desktop 139+ with Prompt API enabled (chrome://flags/#prompt-api-for-gemini-nano).',
-  };
+  // 2. Firebase AI Logic model initialization
+  if (aiService) {
+    try {
+      const model = getGenerativeModel(aiService, {
+        mode: InferenceMode.ONLY_ON_DEVICE,
+      });
+      if (typeof model.initializeDeviceModel === 'function') {
+        await model.initializeDeviceModel((val: number) => {
+          const percent = val <= 1 ? Math.round(val * 100) : Math.round(val);
+          onProgress?.(percent);
+        });
+        return;
+      }
+    } catch (err) {
+      console.warn('Firebase AI Logic device model initialization note:', err);
+      throw err;
+    }
+  }
 }
 
 // Extract recent turns for explicit user review and approval
@@ -103,7 +184,7 @@ export function extractRecentTurns(
   }));
 }
 
-// Assemble prompt from approved context turns and user input
+// Assemble prompt from approved context turns and user input (single-turn client composition)
 export function assembleContextPrompt(
   approvedTurns: ContextTurn[],
   currentPrompt: string
@@ -231,25 +312,31 @@ export function parseCloudError(err: unknown): CloudErrorInfo {
   };
 }
 
-// On-device direct inference executor
+// On-device direct inference executor (ONLY_ON_DEVICE - strictly zero cloud transmission)
 export async function executeOnDeviceInference(
-  formattedPrompt: string
+  formattedPrompt: string,
+  onProgress?: (progressValue: number) => void
 ): Promise<AIResponseResult> {
   // Check Chrome Prompt API first
   if (typeof window !== 'undefined') {
     // @ts-expect-error - Chrome Built-in AI Prompt API
     const aiApi = window.ai;
     if (aiApi?.languageModel) {
-      const session = await aiApi.languageModel.create({
-        systemPrompt:
-          'You are AIVARION, a helpful, private, local AI assistant. Keep responses clear, helpful, and concise.',
-      });
-      const responseText = await session.prompt(formattedPrompt);
-      return {
-        text: responseText,
-        inferenceSource: 'on_device',
-        modeUsed: 'private_local',
-      };
+      try {
+        const session = await aiApi.languageModel.create({
+          systemPrompt:
+            'You are AIVARION, a helpful, private, local AI assistant. Keep responses clear, helpful, and concise.',
+        });
+        const responseText = await session.prompt(formattedPrompt);
+        session.destroy?.();
+        return {
+          text: responseText,
+          inferenceSource: 'on_device',
+          modeUsed: 'private_local',
+        };
+      } catch (chromeErr) {
+        console.warn('Direct Chrome Prompt API attempt note:', chromeErr);
+      }
     }
   }
 
@@ -261,13 +348,17 @@ export async function executeOnDeviceInference(
     );
   }
 
-  // If Firebase AI Logic is available and device model is ready
+  // Firebase AI Logic on-device execution
   if (aiService) {
     try {
       const model = getGenerativeModel(aiService, {
         mode: InferenceMode.ONLY_ON_DEVICE,
-        inCloudParams: { model: 'gemini-1.5-flash' },
       });
+
+      // Call initializeDeviceModel after user interaction before generateContent
+      if (typeof model.initializeDeviceModel === 'function') {
+        await model.initializeDeviceModel(onProgress);
+      }
 
       const result = await model.generateContent(formattedPrompt);
       const text = result.response.text();
@@ -275,7 +366,7 @@ export async function executeOnDeviceInference(
       // Read exact inference source from response metadata
       const rawSource = result.response.inferenceSource;
       const inferenceSource: InferenceSourceType =
-        rawSource === InferenceSource.ON_DEVICE ? 'on_device' : 'in_cloud';
+        rawSource === InferenceSource.IN_CLOUD ? 'in_cloud' : 'on_device';
 
       return {
         text,
@@ -296,7 +387,37 @@ export async function executeOnDeviceInference(
   );
 }
 
-// Cloud inference executor (used ONLY after explicit user approval)
+// Smart Hybrid inference executor (PREFER_ON_DEVICE - cloud fallback only with explicit user permission)
+export async function executeHybridInference(
+  formattedPrompt: string,
+  allowCloudFallback: boolean,
+  onProgress?: (progressValue: number) => void
+): Promise<AIResponseResult> {
+  // If cloud fallback is not allowed, check device availability first
+  if (!allowCloudFallback) {
+    const availability = await checkDeviceModelAvailability();
+    if (availability.status === 'unavailable') {
+      throw new Error(
+        'On-device AI engine is currently unavailable on this device. Cloud fallback requires explicit user approval.'
+      );
+    }
+    // Attempt local execution strictly on-device
+    const localResult = await aiExecutionEngine.executeOnDeviceInference(formattedPrompt, onProgress);
+    return {
+      ...localResult,
+      modeUsed: 'hybrid_auto',
+    };
+  }
+
+  // Cloud fallback granted explicitly by user
+  const cloudRes = await aiExecutionEngine.executeCloudInference(formattedPrompt);
+  return {
+    ...cloudRes,
+    modeUsed: 'hybrid_auto',
+  };
+}
+
+// Cloud inference executor (ONLY_IN_CLOUD - used ONLY after explicit user approval)
 export async function executeCloudInference(
   formattedPrompt: string
 ): Promise<AIResponseResult> {
@@ -308,8 +429,8 @@ export async function executeCloudInference(
 
   try {
     const model = getGenerativeModel(aiService, {
-      model: 'gemini-1.5-flash',
       mode: InferenceMode.ONLY_IN_CLOUD,
+      inCloudParams: { model: 'gemini-2.5-flash' },
     });
 
     const result = await model.generateContent(formattedPrompt);
@@ -330,3 +451,8 @@ export async function executeCloudInference(
     );
   }
 }
+
+export const aiExecutionEngine = {
+  executeCloudInference,
+  executeOnDeviceInference,
+};

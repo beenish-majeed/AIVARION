@@ -1,8 +1,8 @@
 import { AIMode, SanitizationResult } from '../types';
 import {
   executeOnDeviceInference,
+  executeHybridInference,
   executeCloudInference,
-  checkDeviceModelAvailability,
   AIResponseResult,
 } from './aiService';
 import { sanitizeText, SanitizerOptions } from './sanitizer';
@@ -27,31 +27,30 @@ export async function routeAIRequest(
 ): Promise<AIResponseResult | null> {
   const { mode, prompt, sanitizerOptions, onRequireCloudApproval } = params;
 
-  // 1. Private Local Mode
+  // 1. Private Local Mode (InferenceMode.ONLY_ON_DEVICE - strictly zero cloud transmission)
   if (mode === 'private_local') {
-    // Strictly execute on-device. Throws immediately on failure with NO cloud fallback.
     return await executeOnDeviceInference(prompt);
   }
 
-  // 2. Hybrid Auto Mode (Local-First with Explicit Approval Fallback)
+  // 2. Smart Hybrid Mode (InferenceMode.PREFER_ON_DEVICE - on-device first, cloud fallback only with approval)
   if (mode === 'hybrid_auto') {
     try {
-      // Step A: Attempt local on-device inference
-      const localResult = await executeOnDeviceInference(prompt);
+      // Step A: Attempt local on-device inference without cloud permission
+      const localResult = await executeHybridInference(prompt, false);
       return localResult;
     } catch (localErr) {
-      console.warn('Local inference unavailable in Hybrid Auto; engaging privacy gate:', localErr);
+      console.warn('Local inference unavailable in Smart Hybrid; engaging privacy approval gate:', localErr);
 
       // Step B: Prepare deterministic sanitized payload
       const sanitizationResult = sanitizeText(prompt, sanitizerOptions);
 
-      // Step C & D: Block request and invoke approval gate
+      // Step C & D: Block request and invoke human approval gate
       onRequireCloudApproval({
         sanitizedPrompt: sanitizationResult.sanitizedText,
         sanitizationResult,
         executeAfterApproval: async () => {
-          // Step E: Only executed after explicit user approval
-          return await executeCloudInference(sanitizationResult.sanitizedText);
+          // Step E: Only executed after explicit user approval with PREFER_ON_DEVICE / cloud fallback allowed
+          return await executeHybridInference(sanitizationResult.sanitizedText, true);
         },
       });
 
@@ -59,7 +58,7 @@ export async function routeAIRequest(
     }
   }
 
-  // 3. Cloud Mode (Guarded with Explicit Approval)
+  // 3. Cloud Mode (InferenceMode.ONLY_IN_CLOUD - Guarded with Explicit Approval)
   if (mode === 'cloud') {
     const sanitizationResult = sanitizeText(prompt, sanitizerOptions);
 
