@@ -81,6 +81,7 @@ export const HowItWorksSection: React.FC = () => {
   const lastTimeRef = useRef<number | null>(null);
   const dragStartXRef = useRef<number | null>(null);
   const dragStartAngleRef = useRef<number>(0);
+  const hasMovedRef = useRef<boolean>(false);
   const isDraggingRef = useRef(false);
 
   // Check reduced motion preference
@@ -99,16 +100,19 @@ export const HowItWorksSection: React.FC = () => {
   // Continuous infinite circular rotation (right to left)
   const isPaused = isInteracting || activeFlippedIndex !== null || prefersReducedMotion;
 
-  const updateOrbit = useCallback((time: number) => {
-    if (lastTimeRef.current !== null && !isPaused && !isDraggingRef.current) {
-      const delta = time - lastTimeRef.current;
-      // Smooth slow rotation: ~10 degrees per second (36s full orbit)
-      const speed = 0.012; // deg per ms
-      setRotationAngle((prev) => (prev - delta * speed) % 360);
-    }
-    lastTimeRef.current = time;
-    animationFrameRef.current = requestAnimationFrame(updateOrbit);
-  }, [isPaused]);
+  const updateOrbit = useCallback(
+    (time: number) => {
+      if (lastTimeRef.current !== null && !isPaused && !isDraggingRef.current) {
+        const delta = time - lastTimeRef.current;
+        // Smooth continuous right-to-left rotation: ~9 degrees per second (~40s full cycle)
+        const speed = 0.01; // deg per ms
+        setRotationAngle((prev) => (prev - delta * speed) % 360);
+      }
+      lastTimeRef.current = time;
+      animationFrameRef.current = requestAnimationFrame(updateOrbit);
+    },
+    [isPaused]
+  );
 
   useEffect(() => {
     lastTimeRef.current = performance.now();
@@ -120,19 +124,23 @@ export const HowItWorksSection: React.FC = () => {
     };
   }, [updateOrbit]);
 
-  // Touch and Drag Gestures to manually rotate carousel
+  // Touch & Mouse Drag Gestures with threshold to distinguish swipe from tap
   const handlePointerDown = (clientX: number) => {
     isDraggingRef.current = true;
     dragStartXRef.current = clientX;
     dragStartAngleRef.current = rotationAngle;
+    hasMovedRef.current = false;
     setIsInteracting(true);
   };
 
   const handlePointerMove = (clientX: number) => {
     if (!isDraggingRef.current || dragStartXRef.current === null) return;
     const diffX = clientX - dragStartXRef.current;
-    // Map drag distance in pixels to angle degrees (approx 0.4 deg per px)
-    setRotationAngle((dragStartAngleRef.current + diffX * 0.4) % 360);
+    if (Math.abs(diffX) > 5) {
+      hasMovedRef.current = true;
+    }
+    // Map drag distance in pixels to carousel orbital angle
+    setRotationAngle((dragStartAngleRef.current + diffX * 0.35) % 360);
   };
 
   const handlePointerUp = () => {
@@ -141,7 +149,7 @@ export const HowItWorksSection: React.FC = () => {
     setIsInteracting(false);
   };
 
-  // Hover handlers for automatic flip and pause
+  // Automatic hover flip on desktop: smoothly flips 180 degrees and pauses rotation
   const handleCardMouseEnter = (index: number) => {
     if (window.matchMedia('(hover: hover)').matches) {
       setActiveFlippedIndex(index);
@@ -149,6 +157,7 @@ export const HowItWorksSection: React.FC = () => {
     }
   };
 
+  // Cursor leave: smoothly flips back to 0 degrees and automatically resumes rotation
   const handleCardMouseLeave = (index: number) => {
     if (window.matchMedia('(hover: hover)').matches) {
       if (activeFlippedIndex === index) {
@@ -158,22 +167,22 @@ export const HowItWorksSection: React.FC = () => {
     }
   };
 
-  // Card click / tap handler for mobile or keyboard accessibility
+  // Click / tap handler (for mobile or keyboard activation; ignored if dragging)
   const handleCardClick = (index: number) => {
+    if (hasMovedRef.current) return;
     setActiveFlippedIndex((prev) => (prev === index ? null : index));
   };
 
-  // Dimensions & responsive radius
   const totalCards = steps.length;
-  const angleStep = 360 / totalCards; // 90 deg between each of the 4 cards
+  const angleStep = 360 / totalCards; // 90 deg spacing for 4 cards
 
   return (
     <section
       id="how-it-works"
       className="relative py-20 sm:py-28 lg:py-32 px-4 sm:px-6 lg:px-8 border-t border-zinc-200/80 dark:border-zinc-900 bg-zinc-50/70 dark:bg-[#0B0B0B] transition-colors duration-300 overflow-hidden"
     >
-      {/* Ambient Radial Depth Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[650px] bg-[#FF2DA8]/8 rounded-full blur-[150px] pointer-events-none" />
+      {/* Ambient Depth Glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-[#FF2DA8]/8 rounded-full blur-[160px] pointer-events-none" />
 
       <div className="max-w-6xl mx-auto w-full relative z-10 flex flex-col items-center">
         {/* Minimal Section Header */}
@@ -186,7 +195,7 @@ export const HowItWorksSection: React.FC = () => {
           </p>
         </div>
 
-        {/* 3D Infinite Circular Orbit Stage */}
+        {/* 3D Infinite Circular Carousel Orbit */}
         <div
           ref={containerRef}
           onMouseDown={(e) => handlePointerDown(e.clientX)}
@@ -203,26 +212,28 @@ export const HowItWorksSection: React.FC = () => {
           }}
         >
           {steps.map((stepItem, idx) => {
-            // Orbital angle along 360-degree circle
+            // Orbital angle along circular path
             const cardAngle = (rotationAngle + idx * angleStep) % 360;
-            // Normalize to [-180, 180]
+            // Normalize to [-180, 180] degrees
             const normAngle = ((cardAngle + 540) % 360) - 180;
             const rad = (normAngle * Math.PI) / 180;
 
-            // Cylindrical coordinates
-            // Radius: ~320px on desktop, ~220px on mobile
+            // Carousel radius tuned for desktop and mobile viewport
             const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
-            const radius = isMobile ? 210 : 320;
+            const radius = isMobile ? 220 : 340;
 
+            // Cylindrical coordinates: X along width, Z into depth
             const translateX = radius * Math.sin(rad);
-            const translateZ = radius * Math.cos(rad) - radius; // Front card is at 0, back card is at -2*radius
-            // Subtle Y rotation following the curved cylindrical ribbon
-            const rotateY = -normAngle * 0.72;
+            const translateZ = radius * Math.cos(rad) - radius; // 0 in front, -2*radius in back
+            // Subtle rotation angle matching curved perspective ribbon
+            const rotateY = -normAngle * 0.7;
 
-            // Depth scaling and opacity fade
-            const depthFactor = (Math.cos(rad) + 1) / 2; // 1 at front, 0 at back
-            const scale = 0.78 + 0.26 * depthFactor; // 1.04 front, 0.78 back
-            const opacity = 0.35 + 0.65 * Math.pow(depthFactor, 1.2); // Fades back cards
+            // Depth calculation: 1.0 at front (normAngle = 0), 0.0 at back (normAngle = +/-180)
+            const depthFactor = (Math.cos(rad) + 1) / 2;
+            const scale = 0.8 + 0.24 * depthFactor; // 1.04 in front, 0.80 at back
+
+            // Natural fade: fully visible in front hemisphere, disappearing smoothly around back
+            const opacity = Math.max(0.12, Math.pow(depthFactor, 1.4));
             const zIndex = Math.round(10 + 30 * depthFactor);
 
             const isCardFlipped = activeFlippedIndex === idx;
@@ -242,12 +253,13 @@ export const HowItWorksSection: React.FC = () => {
                     handleCardClick(idx);
                   }
                 }}
-                className="absolute w-[230px] sm:w-[260px] md:w-[275px] h-[330px] sm:h-[360px] md:h-[380px] rounded-[28px] focus:outline-none focus:ring-2 focus:ring-[#FF2DA8]/50 will-change-transform"
+                className="absolute w-[235px] sm:w-[265px] md:w-[280px] h-[340px] sm:h-[370px] md:h-[390px] rounded-[28px] focus:outline-none focus:ring-2 focus:ring-[#FF2DA8]/50 will-change-transform"
                 style={{
                   transform: `translate3d(${translateX}px, 0px, ${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`,
                   opacity,
                   zIndex,
                   transformStyle: 'preserve-3d',
+                  pointerEvents: depthFactor < 0.2 ? 'none' : 'auto',
                   transition: isDraggingRef.current
                     ? 'none'
                     : 'transform 0.15s ease-out, opacity 0.2s ease-out',
@@ -261,7 +273,7 @@ export const HowItWorksSection: React.FC = () => {
                     transform: isCardFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
                   }}
                 >
-                  {/* FRONT FACE: Minimal, Elegant Portrait Card */}
+                  {/* FRONT FACE: Minimal, Portrait Card matching second reference image proportions */}
                   <div
                     className={`absolute inset-0 w-full h-full rounded-[28px] p-6 sm:p-7 flex flex-col justify-between border backdrop-blur-xl shadow-xl transition-colors duration-300 overflow-hidden [backface-visibility:hidden] ${
                       isCardFlipped
@@ -277,8 +289,8 @@ export const HowItWorksSection: React.FC = () => {
                       <span className="w-2 h-2 rounded-full bg-[#D4FF3F] glow-chartreuse-sm" />
                     </div>
 
-                    {/* Middle / Clean Visual Space */}
-                    <div className="my-auto py-4">
+                    {/* Middle: Clean Minimal Typography */}
+                    <div className="my-auto py-2">
                       <div className="w-8 h-1 rounded-full bg-zinc-200 dark:bg-zinc-800 mb-6" />
                       <h3 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-white font-display tracking-tight leading-tight mb-2">
                         {stepItem.title}
@@ -290,15 +302,13 @@ export const HowItWorksSection: React.FC = () => {
 
                     {/* Bottom Indicator */}
                     <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800/60 flex items-center justify-between text-[11px] font-mono text-zinc-400 dark:text-zinc-500">
-                      <span>Hover to inspect</span>
+                      <span>Hover to flip</span>
                       <span className="text-[#FF2DA8] font-bold text-xs">→</span>
                     </div>
                   </div>
 
                   {/* BACK FACE: Detailed Information Revealed on Hover */}
-                  <div
-                    className="absolute inset-0 w-full h-full rounded-[28px] p-6 sm:p-7 flex flex-col justify-between border border-[#FF2DA8]/60 backdrop-blur-xl shadow-2xl overflow-hidden [backface-visibility:hidden] [transform:rotateY(180deg)] bg-white/95 dark:bg-[#0E0E12]/95 text-zinc-900 dark:text-white"
-                  >
+                  <div className="absolute inset-0 w-full h-full rounded-[28px] p-6 sm:p-7 flex flex-col justify-between border border-[#FF2DA8]/60 backdrop-blur-xl shadow-2xl overflow-hidden [backface-visibility:hidden] [transform:rotateY(180deg)] bg-white/95 dark:bg-[#0E0E12]/95 text-zinc-900 dark:text-white">
                     <div>
                       {/* Back Header */}
                       <div className="flex items-center justify-between pb-3 mb-3 border-b border-zinc-200/80 dark:border-zinc-800">
@@ -319,7 +329,10 @@ export const HowItWorksSection: React.FC = () => {
                       {/* Bullet points */}
                       <ul className="space-y-2">
                         {stepItem.details.map((detail, i) => (
-                          <li key={i} className="flex items-start gap-2 text-xs text-zinc-700 dark:text-zinc-300 leading-snug">
+                          <li
+                            key={i}
+                            className="flex items-start gap-2 text-xs text-zinc-700 dark:text-zinc-300 leading-snug"
+                          >
                             <CheckCircle2 className="w-3.5 h-3.5 text-[#FF2DA8] shrink-0 mt-0.5" />
                             <span>{detail}</span>
                           </li>
