@@ -4,6 +4,26 @@
 
 :root {
   color-scheme: dark;
+  --bg-primary: #0B0B0B;
+  --bg-secondary: #141416;
+  --bg-tertiary: #1E1E22;
+  --text-primary: #FAFAFA;
+  --text-secondary: #A1A1AA;
+  --text-muted: #71717A;
+  --border-primary: rgba(255, 255, 255, 0.08);
+  --border-secondary: rgba(255, 255, 255, 0.12);
+}
+
+html.light {
+  color-scheme: light;
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F8F9FB;
+  --bg-tertiary: #EEF0F4;
+  --text-primary: #0F0F12;
+  --text-secondary: #4B5563;
+  --text-muted: #6B7280;
+  --border-primary: rgba(0, 0, 0, 0.08);
+  --border-secondary: rgba(0, 0, 0, 0.12);
 }
 
 body {
@@ -13,6 +33,12 @@ body {
   overflow-x: hidden;
   margin: 0;
   padding: 0;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+html.light body {
+  background-color: #F8F9FB;
+  color: #0F0F12;
 }
 
 /* Custom scrollbar matching Jet Black & Hot Pink palette */
@@ -34,6 +60,18 @@ body {
   background: #FF2DA8;
 }
 
+html.light ::-webkit-scrollbar-track {
+  background: #F4F4F6;
+}
+
+html.light ::-webkit-scrollbar-thumb {
+  background: #D4D4D8;
+}
+
+html.light ::-webkit-scrollbar-thumb:hover {
+  background: #FF2DA8;
+}
+
 /* Glassmorphism surfaces */
 .glass-panel {
   background: rgba(20, 20, 20, 0.75);
@@ -47,6 +85,12 @@ body {
   box-shadow: 0 0 25px rgba(255, 45, 168, 0.1);
 }
 
+html.light .glass-panel {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
 /* Enhanced multi-layered glassmorphic surface system */
 .glass-surface {
   background: linear-gradient(135deg, rgba(24, 24, 28, 0.7) 0%, rgba(12, 12, 14, 0.85) 100%);
@@ -58,6 +102,12 @@ body {
   overflow: hidden;
 }
 
+html.light .glass-surface {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(246, 247, 250, 0.92) 100%);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.03);
+}
+
 .glass-surface::before {
   content: '';
   position: absolute;
@@ -67,6 +117,10 @@ body {
   height: 1px;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
   pointer-events: none;
+}
+
+html.light .glass-surface::before {
+  background: linear-gradient(90deg, transparent, rgba(255, 45, 168, 0.25), transparent);
 }
 
 .glass-surface-interactive {
@@ -93,6 +147,15 @@ body {
   z-index: 1;
 }
 
+html.light .glass-surface-interactive::after {
+  background: radial-gradient(
+    380px circle at var(--card-mouse-x, 50%) var(--card-mouse-y, 50%),
+    rgba(255, 45, 168, 0.08) 0%,
+    rgba(255, 45, 168, 0.015) 40%,
+    transparent 70%
+  );
+}
+
 .glass-surface-interactive:hover::after {
   opacity: 1;
 }
@@ -105,9 +168,22 @@ body {
   transform: translateY(-2px);
 }
 
+html.light .glass-surface-interactive:hover {
+  border-color: rgba(255, 45, 168, 0.45);
+  box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.08),
+              0 0 24px -4px rgba(255, 45, 168, 0.12),
+              0 0 0 1px rgba(255, 45, 168, 0.25);
+  transform: translateY(-2px);
+}
+
 .glass-surface-active {
   border-color: rgba(255, 45, 168, 0.55);
   box-shadow: 0 0 40px -5px rgba(255, 45, 168, 0.3);
+}
+
+html.light .glass-surface-active {
+  border-color: rgba(255, 45, 168, 0.6);
+  box-shadow: 0 0 35px -5px rgba(255, 45, 168, 0.2);
 }
 
 .glass-badge {
@@ -115,6 +191,12 @@ body {
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+html.light .glass-badge {
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  color: #374151;
 }
 
 /* Subtle glow effects */
@@ -255,6 +337,15 @@ body {
     rgba(255, 45, 168, 0.035) 30%,
     rgba(212, 255, 63, 0.012) 50%,
     transparent 75%
+  );
+}
+
+html.light .pointer-spotlight {
+  background: radial-gradient(
+    720px circle at var(--spotlight-x, -1000px) var(--spotlight-y, -1000px),
+    rgba(255, 45, 168, 0.08) 0%,
+    rgba(255, 45, 168, 0.02) 30%,
+    transparent 70%
   );
 }
 

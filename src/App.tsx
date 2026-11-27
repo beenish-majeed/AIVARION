@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { LandingPage } from './components/landing/LandingPage';
 import { AppShell } from './components/app/AppShell';
 import { LiquidTransition } from './components/layout/LiquidTransition';
+import { ThemeProvider } from './context/ThemeContext';
 
 export const App: React.FC = () => {
   const [currentPath, setCurrentPath] = useState<string>(() => {
@@ -45,14 +46,14 @@ export const App: React.FC = () => {
   };
 
   return (
-    <>
+    <ThemeProvider>
       <LiquidTransition currentPath={currentPath} />
       {currentPath === '/app' ? (
         <AppShell onNavigateHome={() => navigateTo('/')} />
       ) : (
         <LandingPage onNavigate={navigateTo} />
       )}
-    </>
+    </ThemeProvider>
   );
 };
 
