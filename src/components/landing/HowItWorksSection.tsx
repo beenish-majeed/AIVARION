@@ -71,7 +71,7 @@ const steps: StepData[] = [
 ];
 
 export const HowItWorksSection: React.FC = () => {
-  const [rotationAngle, setRotationAngle] = useState(0);
+  const [trackOffset, setTrackOffset] = useState(0);
   const [activeFlippedIndex, setActiveFlippedIndex] = useState<number | null>(null);
   const [isInteracting, setIsInteracting] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
@@ -80,7 +80,7 @@ export const HowItWorksSection: React.FC = () => {
   const animationFrameRef = useRef<number | null>(null);
   const lastTimeRef = useRef<number | null>(null);
   const dragStartXRef = useRef<number | null>(null);
-  const dragStartAngleRef = useRef<number>(0);
+  const dragStartOffsetRef = useRef<number>(0);
   const hasMovedRef = useRef<boolean>(false);
   const isDraggingRef = useRef(false);
 
@@ -97,38 +97,39 @@ export const HowItWorksSection: React.FC = () => {
     return () => motionQuery.removeEventListener('change', handleMotionChange);
   }, []);
 
-  // Continuous infinite circular rotation (right to left)
+  // Continuous infinite horizontal conveyor belt movement
+  // Moves slowly in one direction: cards exit on the RIGHT and re-enter on the LEFT
   const isPaused = isInteracting || activeFlippedIndex !== null || prefersReducedMotion;
 
-  const updateOrbit = useCallback(
+  const updateConveyor = useCallback(
     (time: number) => {
       if (lastTimeRef.current !== null && !isPaused && !isDraggingRef.current) {
         const delta = time - lastTimeRef.current;
-        // Smooth continuous right-to-left rotation: ~9 degrees per second (~40s full cycle)
-        const speed = 0.01; // deg per ms
-        setRotationAngle((prev) => (prev - delta * speed) % 360);
+        // Smooth slow movement to the right: ~26px per second
+        const speed = 0.026; // px per ms
+        setTrackOffset((prev) => prev + delta * speed);
       }
       lastTimeRef.current = time;
-      animationFrameRef.current = requestAnimationFrame(updateOrbit);
+      animationFrameRef.current = requestAnimationFrame(updateConveyor);
     },
     [isPaused]
   );
 
   useEffect(() => {
     lastTimeRef.current = performance.now();
-    animationFrameRef.current = requestAnimationFrame(updateOrbit);
+    animationFrameRef.current = requestAnimationFrame(updateConveyor);
     return () => {
       if (animationFrameRef.current !== null) {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [updateOrbit]);
+  }, [updateConveyor]);
 
-  // Touch & Mouse Drag Gestures with threshold to distinguish swipe from tap
+  // Touch & Mouse Drag Gestures
   const handlePointerDown = (clientX: number) => {
     isDraggingRef.current = true;
     dragStartXRef.current = clientX;
-    dragStartAngleRef.current = rotationAngle;
+    dragStartOffsetRef.current = trackOffset;
     hasMovedRef.current = false;
     setIsInteracting(true);
   };
@@ -139,8 +140,7 @@ export const HowItWorksSection: React.FC = () => {
     if (Math.abs(diffX) > 5) {
       hasMovedRef.current = true;
     }
-    // Map drag distance in pixels to carousel orbital angle
-    setRotationAngle((dragStartAngleRef.current + diffX * 0.35) % 360);
+    setTrackOffset(dragStartOffsetRef.current + diffX);
   };
 
   const handlePointerUp = () => {
@@ -149,7 +149,7 @@ export const HowItWorksSection: React.FC = () => {
     setIsInteracting(false);
   };
 
-  // Automatic hover flip on desktop: smoothly flips 180 degrees and pauses rotation
+  // Automatic hover flip: smoothly pauses conveyor and flips card 180 degrees
   const handleCardMouseEnter = (index: number) => {
     if (window.matchMedia('(hover: hover)').matches) {
       setActiveFlippedIndex(index);
@@ -157,7 +157,7 @@ export const HowItWorksSection: React.FC = () => {
     }
   };
 
-  // Cursor leave: smoothly flips back to 0 degrees and automatically resumes rotation
+  // Cursor leave: smoothly flips back to 0 degrees and automatically resumes movement
   const handleCardMouseLeave = (index: number) => {
     if (window.matchMedia('(hover: hover)').matches) {
       if (activeFlippedIndex === index) {
@@ -167,14 +167,20 @@ export const HowItWorksSection: React.FC = () => {
     }
   };
 
-  // Click / tap handler (for mobile or keyboard activation; ignored if dragging)
+  // Click / tap handler (for mobile or keyboard activation; ignored during drag)
   const handleCardClick = (index: number) => {
     if (hasMovedRef.current) return;
     setActiveFlippedIndex((prev) => (prev === index ? null : index));
   };
 
-  const totalCards = steps.length;
-  const angleStep = 360 / totalCards; // 90 deg spacing for 4 cards
+  // Responsive dimensions and horizontal conveyor spacing
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
+  const cardWidth = isMobile ? 220 : 265;
+  const cardHeight = isMobile ? 320 : 375;
+  const cardGap = isMobile ? 22 : 35;
+  const stride = cardWidth + cardGap; // ~300px desktop, ~242px mobile
+  const totalSpan = steps.length * stride; // 1200px desktop, 968px mobile
+  const halfSpan = totalSpan / 2; // 600px desktop, 484px mobile
 
   return (
     <section
@@ -186,7 +192,7 @@ export const HowItWorksSection: React.FC = () => {
 
       <div className="max-w-6xl mx-auto w-full relative z-10 flex flex-col items-center">
         {/* Minimal Section Header */}
-        <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
+        <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-zinc-900 dark:text-white font-display mb-3">
             How It Works
           </h2>
@@ -195,7 +201,7 @@ export const HowItWorksSection: React.FC = () => {
           </p>
         </div>
 
-        {/* 3D Infinite Circular Carousel Orbit */}
+        {/* Horizontal Infinite Conveyor Belt with Subtle Curved Perspective */}
         <div
           ref={containerRef}
           onMouseDown={(e) => handlePointerDown(e.clientX)}
@@ -205,36 +211,44 @@ export const HowItWorksSection: React.FC = () => {
           onTouchStart={(e) => handlePointerDown(e.touches[0].clientX)}
           onTouchMove={(e) => handlePointerMove(e.touches[0].clientX)}
           onTouchEnd={handlePointerUp}
-          className="relative w-full max-w-5xl h-[420px] sm:h-[450px] md:h-[470px] flex items-center justify-center select-none cursor-grab active:cursor-grabbing"
+          className="relative w-full max-w-6xl h-[390px] sm:h-[430px] md:h-[450px] flex items-center justify-center select-none cursor-grab active:cursor-grabbing overflow-visible"
           style={{
             perspective: '1200px',
             transformStyle: 'preserve-3d',
+            maskImage:
+              'linear-gradient(to right, transparent, black 12%, black 88%, transparent)',
+            WebkitMaskImage:
+              'linear-gradient(to right, transparent, black 12%, black 88%, transparent)',
           }}
         >
           {steps.map((stepItem, idx) => {
-            // Orbital angle along circular path
-            const cardAngle = (rotationAngle + idx * angleStep) % 360;
-            // Normalize to [-180, 180] degrees
-            const normAngle = ((cardAngle + 540) % 360) - 180;
-            const rad = (normAngle * Math.PI) / 180;
+            // Base slot position for card idx in the 4-card sequence
+            const basePos = (idx - 1.5) * stride;
+            // Continuous position with track offset
+            const rawPos = basePos + trackOffset;
 
-            // Carousel radius tuned for desktop and mobile viewport
-            const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
-            const radius = isMobile ? 220 : 340;
+            // Symmetrical modular wrapping in [-halfSpan, halfSpan]
+            // As card moves right past +halfSpan, it seamlessly wraps to -halfSpan on the left
+            let x = ((rawPos + halfSpan) % totalSpan);
+            if (x < 0) x += totalSpan;
+            x -= halfSpan;
 
-            // Cylindrical coordinates: X along width, Z into depth
-            const translateX = radius * Math.sin(rad);
-            const translateZ = radius * Math.cos(rad) - radius; // 0 in front, -2*radius in back
-            // Subtle rotation angle matching curved perspective ribbon
-            const rotateY = -normAngle * 0.7;
+            // Normalized position ratio u in [-1, 1] relative to halfSpan
+            const u = x / halfSpan;
+            const absU = Math.min(1, Math.abs(u));
 
-            // Depth calculation: 1.0 at front (normAngle = 0), 0.0 at back (normAngle = +/-180)
-            const depthFactor = (Math.cos(rad) + 1) / 2;
-            const scale = 0.8 + 0.24 * depthFactor; // 1.04 in front, 0.80 at back
+            // Subtle curved perspective matching the reference image:
+            // Center cards face forward (rotateY = 0), outer cards angle slightly inward
+            const maxAngle = 24; // degrees
+            const rotateY = -u * maxAngle;
 
-            // Natural fade: fully visible in front hemisphere, disappearing smoothly around back
-            const opacity = Math.max(0.12, Math.pow(depthFactor, 1.4));
-            const zIndex = Math.round(10 + 30 * depthFactor);
+            // Subtle depth and scale: center is prominent, outer cards recede slightly
+            const translateZ = -Math.pow(absU, 1.3) * 65; // px
+            const scale = 1 - Math.pow(absU, 1.2) * 0.12;
+
+            // Natural edge fade: fully opaque across visible track, smoothly dissolves at boundary
+            const edgeFade = absU > 0.82 ? Math.max(0, (1 - absU) / 0.18) : 1;
+            const zIndex = Math.round(30 - 20 * absU);
 
             const isCardFlipped = activeFlippedIndex === idx;
 
@@ -253,27 +267,26 @@ export const HowItWorksSection: React.FC = () => {
                     handleCardClick(idx);
                   }
                 }}
-                className="absolute w-[235px] sm:w-[265px] md:w-[280px] h-[340px] sm:h-[370px] md:h-[390px] rounded-[28px] focus:outline-none focus:ring-2 focus:ring-[#FF2DA8]/50 will-change-transform"
+                className="absolute rounded-[28px] focus:outline-none focus:ring-2 focus:ring-[#FF2DA8]/50 will-change-transform"
                 style={{
-                  transform: `translate3d(${translateX}px, 0px, ${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`,
-                  opacity,
+                  width: `${cardWidth}px`,
+                  height: `${cardHeight}px`,
+                  transform: `translate3d(${x}px, 0px, ${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`,
+                  opacity: edgeFade,
                   zIndex,
                   transformStyle: 'preserve-3d',
-                  pointerEvents: depthFactor < 0.2 ? 'none' : 'auto',
-                  transition: isDraggingRef.current
-                    ? 'none'
-                    : 'transform 0.15s ease-out, opacity 0.2s ease-out',
+                  pointerEvents: edgeFade < 0.2 ? 'none' : 'auto',
                 }}
               >
                 {/* 3D Flip Card Container */}
                 <div
-                  className="w-full h-full relative rounded-[28px] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
+                  className="w-full h-full relative rounded-[28px] transition-transform duration-600 ease-[cubic-bezier(0.22,1,0.36,1)]"
                   style={{
                     transformStyle: 'preserve-3d',
                     transform: isCardFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
                   }}
                 >
-                  {/* FRONT FACE: Minimal, Portrait Card matching second reference image proportions */}
+                  {/* FRONT FACE: Minimal, Elegant Portrait Card */}
                   <div
                     className={`absolute inset-0 w-full h-full rounded-[28px] p-6 sm:p-7 flex flex-col justify-between border backdrop-blur-xl shadow-xl transition-colors duration-300 overflow-hidden [backface-visibility:hidden] ${
                       isCardFlipped
