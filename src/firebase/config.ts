@@ -42,12 +42,86 @@ export const auth: Auth = getAuth(app);
 // Initialize Cloud Firestore
 export const db: Firestore = getFirestore(app);
 
-// Bridge Chrome Prompt API to Firebase AI Logic LanguageModel if available
+// Bridge Chrome Prompt API to Firebase AI Logic LanguageModel provider
 if (typeof window !== 'undefined') {
-  // @ts-expect-error - Bridge Prompt API to window.LanguageModel
-  if (!window.LanguageModel && window.ai?.languageModel) {
-    // @ts-expect-error - Bridge Prompt API
-    window.LanguageModel = window.ai.languageModel;
+  const getNativePromptAPI = () => {
+    // @ts-expect-error - Chrome Built-in AI Prompt API
+    return window.LanguageModel || window.ai?.languageModel;
+  };
+
+  const nativeLM = getNativePromptAPI();
+  if (nativeLM) {
+    // @ts-expect-error - Standardize LanguageModel bridge for @firebase/ai ChromeAdapter
+    window.LanguageModel = {
+      // 1. availability matching @firebase/ai Availability enum ('available' | 'downloadable' | 'downloading' | 'unavailable')
+      availability: async (options?: Record<string, unknown>) => {
+        try {
+          if (typeof nativeLM.availability === 'function') {
+            const avail = await nativeLM.availability(options);
+            if (avail === 'readily' || avail === 'available') return 'available';
+            if (avail === 'after-download' || avail === 'downloadable') return 'downloadable';
+            if (avail === 'downloading') return 'downloading';
+            return 'unavailable';
+          }
+          if (typeof nativeLM.capabilities === 'function') {
+            const cap = await nativeLM.capabilities(options);
+            if (cap?.available === 'readily' || cap?.available === 'available') return 'available';
+            if (cap?.available === 'after-download' || cap?.available === 'downloadable') return 'downloadable';
+            if (cap?.available === 'downloading') return 'downloading';
+            return 'unavailable';
+          }
+        } catch (err) {
+          console.warn('LanguageModel.availability bridge note:', err);
+        }
+        return 'unavailable';
+      },
+
+      // 2. capabilities for direct callers
+      capabilities: async (options?: Record<string, unknown>) => {
+        if (typeof nativeLM.capabilities === 'function') {
+          return nativeLM.capabilities(options);
+        }
+        const avail = await nativeLM.availability?.(options);
+        return { available: avail };
+      },
+
+      // 3. create session with monitor progress and contents adapter
+      create: async (options?: Record<string, unknown>) => {
+        const session = await nativeLM.create(options);
+        return {
+          ...session,
+          // Adapts @firebase/ai format (array of { role, content }) or string to native prompt
+          prompt: async (contents: unknown, promptOptions?: Record<string, unknown>) => {
+            let promptText = '';
+            if (typeof contents === 'string') {
+              promptText = contents;
+            } else if (Array.isArray(contents)) {
+              promptText = contents
+                .map((m) => {
+                  if (typeof m === 'string') return m;
+                  if (typeof m?.content === 'string') return m.content;
+                  if (Array.isArray(m?.content)) {
+                    return m.content
+                      .map((p: Record<string, unknown>) => (typeof p?.text === 'string' ? p.text : ''))
+                      .join('');
+                  }
+                  return String(m?.content || '');
+                })
+                .join('\n\n');
+            } else {
+              promptText = String(contents || '');
+            }
+
+            try {
+              return await session.prompt(promptText, promptOptions);
+            } catch (promptErr) {
+              return await session.prompt(contents, promptOptions);
+            }
+          },
+          destroy: () => session.destroy?.(),
+        };
+      },
+    };
   }
 }
 

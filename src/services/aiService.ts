@@ -56,22 +56,22 @@ export function isChromeDesktop139OrNewer(): {
 
 // Check Chrome Prompt API and Firebase AI Logic device model availability
 export async function checkDeviceModelAvailability(): Promise<DeviceAvailabilityInfo> {
-  // 1. Check Chrome Prompt API (Gemini Nano) directly if available in browser
+  // 1. Check Chrome Prompt API / window.LanguageModel provider
   if (typeof window !== 'undefined') {
-    // @ts-expect-error - Chrome Built-in AI Prompt API
-    const aiApi = window.ai || (window as unknown as { ChromeAI?: unknown }).ChromeAI;
+    // @ts-expect-error - Chrome Built-in AI Prompt API or LanguageModel provider
+    const lm = window.LanguageModel || window.ai?.languageModel || (window as unknown as { ChromeAI?: unknown }).ChromeAI;
 
-    if (aiApi?.languageModel) {
+    if (lm) {
       try {
-        if (typeof aiApi.languageModel.capabilities === 'function') {
-          const capabilities = await aiApi.languageModel.capabilities();
-          if (capabilities?.available === 'readily') {
+        if (typeof lm.capabilities === 'function') {
+          const capabilities = await lm.capabilities();
+          if (capabilities?.available === 'readily' || capabilities?.available === 'available') {
             return {
               status: 'ready',
               engineName: 'Chrome Gemini Nano (On-Device)',
               details: 'Model is downloaded and ready for zero-latency local inference.',
             };
-          } else if (capabilities?.available === 'after-download') {
+          } else if (capabilities?.available === 'after-download' || capabilities?.available === 'downloadable') {
             return {
               status: 'downloading',
               engineName: 'Chrome Gemini Nano (On-Device)',
@@ -79,8 +79,8 @@ export async function checkDeviceModelAvailability(): Promise<DeviceAvailability
             };
           }
         }
-        if (typeof aiApi.languageModel.availability === 'function') {
-          const avail = await aiApi.languageModel.availability();
+        if (typeof lm.availability === 'function') {
+          const avail = await lm.availability();
           if (avail === 'readily' || avail === 'available') {
             return {
               status: 'ready',
@@ -100,7 +100,7 @@ export async function checkDeviceModelAvailability(): Promise<DeviceAvailability
           }
         }
       } catch (err) {
-        console.warn('Error reading Chrome AI languageModel capabilities:', err);
+        console.warn('Error reading Chrome AI languageModel availability:', err);
       }
     }
   }
@@ -108,7 +108,7 @@ export async function checkDeviceModelAvailability(): Promise<DeviceAvailability
   // 2. Check if running in Chrome Desktop 139+
   const chromeCheck = isChromeDesktop139OrNewer();
   let details =
-    'On-device Gemini Nano requires Chrome Desktop 139+ with Prompt API enabled (chrome://flags/#prompt-api-for-gemini-nano).';
+    'On-device Gemini Nano requires Chrome Desktop with Prompt API enabled (chrome://flags/#prompt-api) and Optimization Guide enabled with performance bypass (chrome://flags/#optimization-guide-on-device-model -> Enabled BypassPerfRequirement).';
   if (!chromeCheck.isChrome) {
     details =
       'Unsupported browser for on-device inference. Please use Google Chrome Desktop version 139 or newer.';
