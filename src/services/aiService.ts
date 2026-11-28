@@ -1,6 +1,7 @@
 import {
   aiService,
   isFirebaseConfigured,
+  ensureAnonymousAuth,
 } from '../firebase/config';
 import {
   getGenerativeModel,
@@ -317,15 +318,30 @@ export async function executeOnDeviceInference(
   formattedPrompt: string,
   onProgress?: (progressValue: number) => void
 ): Promise<AIResponseResult> {
-  // Check Chrome Prompt API first
+  const availability = await checkDeviceModelAvailability();
+  if (availability.status === 'unavailable') {
+    throw new Error(
+      'On-device AI engine is currently unavailable on this device. Private Local mode will never route data to the cloud.'
+    );
+  }
+
+  // 1. Check Chrome Prompt API (Gemini Nano) directly if available
   if (typeof window !== 'undefined') {
     // @ts-expect-error - Chrome Built-in AI Prompt API
-    const aiApi = window.ai;
+    const aiApi = window.ai || (window as unknown as { ChromeAI?: unknown }).ChromeAI;
     if (aiApi?.languageModel) {
       try {
         const session = await aiApi.languageModel.create({
           systemPrompt:
             'You are AIVARION, a helpful, private, local AI assistant. Keep responses clear, helpful, and concise.',
+          monitor(m: EventTarget) {
+            m.addEventListener('downloadprogress', (e: Event) => {
+              const pe = e as ProgressEvent;
+              if (pe.total && onProgress) {
+                onProgress(Math.round((pe.loaded / pe.total) * 100));
+              }
+            });
+          },
         });
         const responseText = await session.prompt(formattedPrompt);
         session.destroy?.();
@@ -340,15 +356,7 @@ export async function executeOnDeviceInference(
     }
   }
 
-  // Check if device model is ready via availability check
-  const availability = await checkDeviceModelAvailability();
-  if (availability.status === 'unavailable') {
-    throw new Error(
-      'On-device AI engine is currently unavailable on this device. Private Local mode will never route data to the cloud.'
-    );
-  }
-
-  // Firebase AI Logic on-device execution
+  // 2. Firebase AI Logic on-device execution
   if (aiService) {
     try {
       const model = getGenerativeModel(aiService, {
@@ -357,7 +365,10 @@ export async function executeOnDeviceInference(
 
       // Call initializeDeviceModel after user interaction before generateContent
       if (typeof model.initializeDeviceModel === 'function') {
-        await model.initializeDeviceModel(onProgress);
+        await model.initializeDeviceModel((val: number) => {
+          const percent = val <= 1 ? Math.round(val * 100) : Math.round(val);
+          onProgress?.(percent);
+        });
       }
 
       const result = await model.generateContent(formattedPrompt);
@@ -393,7 +404,7 @@ export async function executeHybridInference(
   allowCloudFallback: boolean,
   onProgress?: (progressValue: number) => void
 ): Promise<AIResponseResult> {
-  // If cloud fallback is not allowed, check device availability first
+  // If cloud fallback is not allowed, must attempt local on-device inference first
   if (!allowCloudFallback) {
     const availability = await checkDeviceModelAvailability();
     if (availability.status === 'unavailable') {
@@ -401,12 +412,32 @@ export async function executeHybridInference(
         'On-device AI engine is currently unavailable on this device. Cloud fallback requires explicit user approval.'
       );
     }
-    // Attempt local execution strictly on-device
-    const localResult = await aiExecutionEngine.executeOnDeviceInference(formattedPrompt, onProgress);
+    const localResult = await aiExecutionEngine.executeOnDeviceInference(
+      formattedPrompt,
+      onProgress
+    );
     return {
       ...localResult,
       modeUsed: 'hybrid_auto',
     };
+  }
+
+  // User explicitly granted cloud fallback permission:
+  // Check if local on-device model is ready first
+  const availability = await checkDeviceModelAvailability();
+  if (availability.status === 'ready') {
+    try {
+      const localResult = await aiExecutionEngine.executeOnDeviceInference(
+        formattedPrompt,
+        onProgress
+      );
+      return {
+        ...localResult,
+        modeUsed: 'hybrid_auto',
+      };
+    } catch (hybridErr) {
+      console.warn('Local inference attempt note, falling back to cloud:', hybridErr);
+    }
   }
 
   // Cloud fallback granted explicitly by user
@@ -427,29 +458,53 @@ export async function executeCloudInference(
     );
   }
 
-  try {
-    const model = getGenerativeModel(aiService, {
-      mode: InferenceMode.ONLY_IN_CLOUD,
-      inCloudParams: { model: 'gemini-2.5-flash' },
-    });
+  // Ensure anonymous auth session is active
+  await ensureAnonymousAuth();
 
-    const result = await model.generateContent(formattedPrompt);
-    const text = result.response.text();
+  const candidateModels = [
+    'gemini-3.8-flash',
+    'gemini-3.5-flash-lite',
+    'gemini-2.5-flash',
+  ];
 
-    const rawSource = result.response.inferenceSource;
-    const inferenceSource: InferenceSourceType =
-      rawSource === InferenceSource.ON_DEVICE ? 'on_device' : 'in_cloud';
+  let lastError: unknown;
+  for (const modelName of candidateModels) {
+    try {
+      const model = getGenerativeModel(aiService, {
+        mode: InferenceMode.ONLY_IN_CLOUD,
+        inCloudParams: { model: modelName },
+      });
 
-    return {
-      text,
-      inferenceSource,
-      modeUsed: 'cloud',
-    };
-  } catch (err: unknown) {
-    throw new Error(
-      `Cloud inference error: ${err instanceof Error ? err.message : String(err)}`
-    );
+      const result = await model.generateContent(formattedPrompt);
+      const text = result.response.text();
+
+      const rawSource = result.response.inferenceSource;
+      const inferenceSource: InferenceSourceType =
+        rawSource === InferenceSource.ON_DEVICE ? 'on_device' : 'in_cloud';
+
+      return {
+        text,
+        inferenceSource,
+        modeUsed: 'cloud',
+      };
+    } catch (err: unknown) {
+      lastError = err;
+      const errMsg = err instanceof Error ? err.message : String(err);
+      if (
+        errMsg.includes('404') ||
+        errMsg.includes('retired') ||
+        errMsg.includes('no longer available') ||
+        errMsg.includes('503') ||
+        errMsg.includes('overloaded')
+      ) {
+        console.warn(`Model ${modelName} returned temporary error; trying next candidate:`, errMsg);
+        continue;
+      }
+      throw err;
+    }
   }
+
+  throw lastError || new Error('All candidate cloud models failed to respond.');
 }
 
 export const aiExecutionEngine = {

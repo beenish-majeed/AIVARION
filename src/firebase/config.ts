@@ -1,7 +1,13 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth, signInAnonymously, Auth, User } from 'firebase/auth';
 import { getFirestore, Firestore } from 'firebase/firestore';
-import { initializeAppCheck, ReCaptchaV3Provider, ReCaptchaEnterpriseProvider, AppCheck } from 'firebase/app-check';
+import {
+  initializeAppCheck,
+  ReCaptchaV3Provider,
+  ReCaptchaEnterpriseProvider,
+  CustomProvider,
+  AppCheck,
+} from 'firebase/app-check';
 import { getAI, GoogleAIBackend, AI } from 'firebase/ai';
 
 const firebaseConfig = {
@@ -13,7 +19,7 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID || '1:123456789012:web:mockdev123456',
 };
 
-// Check if Firebase configuration is provided
+// Check if Firebase configuration is provided with real project credentials
 export const isFirebaseConfigured = (): boolean => {
   const key = import.meta.env.VITE_FIREBASE_API_KEY;
   return (
@@ -36,39 +42,92 @@ export const auth: Auth = getAuth(app);
 // Initialize Cloud Firestore
 export const db: Firestore = getFirestore(app);
 
-// Initialize Firebase App Check (reCAPTCHA v3 or Enterprise with dev debug token)
+// Bridge Chrome Prompt API to Firebase AI Logic LanguageModel if available
+if (typeof window !== 'undefined') {
+  // @ts-expect-error - Bridge Prompt API to window.LanguageModel
+  if (!window.LanguageModel && window.ai?.languageModel) {
+    // @ts-expect-error - Bridge Prompt API
+    window.LanguageModel = window.ai.languageModel;
+  }
+}
+
+// Initialize Firebase App Check
 export let appCheck: AppCheck | null = null;
 
 if (typeof window !== 'undefined') {
-  const debugTokenEnv = import.meta.env.VITE_FIREBASE_APP_CHECK_DEBUG_TOKEN;
-  const isDebug = debugTokenEnv === 'true' || import.meta.env.DEV;
+  const rawDebugToken = import.meta.env.VITE_FIREBASE_APP_CHECK_DEBUG_TOKEN;
+  const cleanDebugToken =
+    typeof rawDebugToken === 'string'
+      ? rawDebugToken.replace(/^["']|["']$/g, '').trim()
+      : undefined;
 
-  if (debugTokenEnv && debugTokenEnv !== 'true' && debugTokenEnv !== 'false') {
-    // Custom debug token string configured in environment
-    // @ts-expect-error - App Check debug token on window
-    self.FIREBASE_APPCHECK_DEBUG_TOKEN = debugTokenEnv;
-  } else if (isDebug) {
-    // In dev mode, auto-generate and log debug token in browser console
-    // @ts-expect-error - App Check debug token on window
-    self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
-  }
+  const rawSiteKey = import.meta.env.VITE_FIREBASE_APP_CHECK_SITE_KEY;
+  const cleanSiteKey =
+    typeof rawSiteKey === 'string'
+      ? rawSiteKey.replace(/^["']|["']$/g, '').trim()
+      : undefined;
 
-  const siteKey = import.meta.env.VITE_FIREBASE_APP_CHECK_SITE_KEY;
-  const providerType = import.meta.env.VITE_FIREBASE_APP_CHECK_PROVIDER || 'recaptcha-v3';
+  const isRealRecaptchaKey =
+    !!cleanSiteKey &&
+    cleanSiteKey.startsWith('6L') &&
+    cleanSiteKey.length >= 30;
 
-  if (siteKey && siteKey !== 'your_recaptcha_site_key') {
+  // 1. If a real reCAPTCHA site key is present, initialize with reCAPTCHA provider
+  if (isRealRecaptchaKey) {
     try {
+      const providerType = import.meta.env.VITE_FIREBASE_APP_CHECK_PROVIDER || 'recaptcha-v3';
       const provider =
         providerType === 'enterprise'
-          ? new ReCaptchaEnterpriseProvider(siteKey)
-          : new ReCaptchaV3Provider(siteKey);
+          ? new ReCaptchaEnterpriseProvider(cleanSiteKey)
+          : new ReCaptchaV3Provider(cleanSiteKey);
 
       appCheck = initializeAppCheck(app, {
         provider,
         isTokenAutoRefreshEnabled: true,
       });
     } catch (err) {
-      console.warn('App Check initialization failed or skipped:', err);
+      console.warn('ReCaptcha provider initialization note:', err);
+    }
+  }
+
+  // 2. If a registered debug token is configured, use CustomProvider debug exchange
+  if (!appCheck && cleanDebugToken && cleanDebugToken !== 'false') {
+    try {
+      // @ts-expect-error - App Check debug token on window
+      self.FIREBASE_APPCHECK_DEBUG_TOKEN = cleanDebugToken;
+
+      const provider = new CustomProvider({
+        getToken: async () => {
+          try {
+            const endpoint = `https://firebaseappcheck.googleapis.com/v1/projects/${firebaseConfig.projectId}/apps/${firebaseConfig.appId}:exchangeDebugToken?key=${firebaseConfig.apiKey}`;
+            const res = await fetch(endpoint, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ debugToken: cleanDebugToken }),
+            });
+            if (!res.ok) {
+              const errBody = await res.text();
+              throw new Error(`Debug token exchange failed (${res.status}): ${errBody}`);
+            }
+            const data = await res.json();
+            const ttlSeconds = parseInt(data.ttl, 10) || 3600;
+            return {
+              token: data.token,
+              expireTimeMillis: Date.now() + ttlSeconds * 1000,
+            };
+          } catch (exchangeErr) {
+            console.warn('App Check debug token exchange note:', exchangeErr);
+            throw exchangeErr;
+          }
+        },
+      });
+
+      appCheck = initializeAppCheck(app, {
+        provider,
+        isTokenAutoRefreshEnabled: true,
+      });
+    } catch (err) {
+      console.warn('App Check custom debug provider initialization note:', err);
     }
   }
 }
