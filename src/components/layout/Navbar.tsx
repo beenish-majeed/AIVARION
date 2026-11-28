@@ -41,7 +41,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', onNavigate })
         </a>
 
         {/* Center Navigation Links (Hidden on small mobile) */}
-        <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-600 dark:text-zinc-300">
+        <nav className="hidden md:flex items-center gap-5 lg:gap-8 text-sm font-medium text-zinc-600 dark:text-zinc-300">
           <a
             href="#features"
             className="hover:text-zinc-900 dark:hover:text-white transition-colors py-1 focus:outline-none focus:ring-1 focus:ring-[#FF2DA8] rounded"
@@ -70,7 +70,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', onNavigate })
         </nav>
 
         {/* Right Actions: Theme Toggle + Badge + Try CTA */}
-        <div className="flex items-center gap-3 sm:gap-4">
+        <div className="flex items-center gap-2.5 sm:gap-4 shrink-0">
           <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-xs text-zinc-600 dark:text-zinc-400">
             <span className="w-2 h-2 rounded-full bg-[#D4FF3F] animate-pulse glow-chartreuse-sm" />
             <span>Local AI Ready</span>
