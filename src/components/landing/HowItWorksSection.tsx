@@ -175,17 +175,18 @@ export const HowItWorksSection: React.FC = () => {
 
   // Responsive dimensions and horizontal conveyor spacing
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
-  const cardWidth = isMobile ? 220 : 265;
-  const cardHeight = isMobile ? 320 : 375;
-  const cardGap = isMobile ? 22 : 35;
-  const stride = cardWidth + cardGap; // ~300px desktop, ~242px mobile
-  const totalSpan = steps.length * stride; // 1200px desktop, 968px mobile
-  const halfSpan = totalSpan / 2; // 600px desktop, 484px mobile
+  const cardWidth = isMobile ? 220 : 260;
+  const cardHeight = isMobile ? 320 : 380;
+  const cardGap = isMobile ? 20 : 35;
+  const stride = cardWidth + cardGap; // ~295px desktop, ~240px mobile
+  const totalSpan = steps.length * stride; // ~1180px desktop, ~960px mobile
+  const halfSpan = totalSpan / 2; // ~590px desktop, ~480px mobile
 
-  // Arc curvature settings matching reference image
-  const arcDropMax = isMobile ? 22 : 36; // px vertical downward offset for outer cards
-  const arcDepthMax = isMobile ? 55 : 85; // px recession into depth for outer cards
-  const maxAngle = isMobile ? 18 : 22; // degrees inward Y rotation for outer cards
+  // Pronounced arc curvature settings matching the Voyager reference image
+  const arcDropMax = isMobile ? 42 : 72; // px vertical downward curve for outer cards
+  const arcDepthMax = isMobile ? 130 : 240; // px depth recession into screen for outer cards
+  const maxAngle = isMobile ? 34 : 45; // degrees inward Y rotation for outer cards
+  const scenePerspective = isMobile ? '720px' : '880px';
 
   return (
     <section
@@ -216,14 +217,14 @@ export const HowItWorksSection: React.FC = () => {
           onTouchStart={(e) => handlePointerDown(e.touches[0].clientX)}
           onTouchMove={(e) => handlePointerMove(e.touches[0].clientX)}
           onTouchEnd={handlePointerUp}
-          className="relative w-full max-w-6xl h-[420px] sm:h-[450px] md:h-[470px] flex items-center justify-center select-none cursor-grab active:cursor-grabbing overflow-visible"
+          className="relative w-full max-w-6xl h-[460px] sm:h-[490px] md:h-[520px] flex items-center justify-center select-none cursor-grab active:cursor-grabbing overflow-visible"
           style={{
-            perspective: '1200px',
+            perspective: scenePerspective,
             transformStyle: 'preserve-3d',
             maskImage:
-              'linear-gradient(to right, transparent, black 12%, black 88%, transparent)',
+              'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
             WebkitMaskImage:
-              'linear-gradient(to right, transparent, black 12%, black 88%, transparent)',
+              'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
           }}
         >
           {steps.map((stepItem, idx) => {
@@ -243,17 +244,17 @@ export const HowItWorksSection: React.FC = () => {
             const absU = Math.min(1, Math.abs(u));
 
             // Curved Arc Geometry matching the reference image:
-            // 1. Center cards are highest (translateY = 0); outer cards gradually drop downward along a smooth parabola
-            const translateY = Math.pow(absU, 1.8) * arcDropMax;
+            // 1. Center cards are highest (translateY = 0); outer cards visibly drop downward along a smooth arc
+            const translateY = Math.pow(absU, 1.35) * arcDropMax;
 
-            // 2. Center cards are closest (translateZ = 0); outer cards gently recede in depth
-            const translateZ = -Math.pow(absU, 1.4) * arcDepthMax;
+            // 2. Center cards are closest (translateZ = 0); outer cards recede deep into 3D perspective
+            const translateZ = -Math.pow(absU, 1.2) * arcDepthMax;
 
-            // 3. Center cards face forward (rotateY = 0); outer cards turn gently inward with 3D perspective
-            const rotateY = -u * maxAngle;
+            // 3. Center cards face forward (rotateY = 0); outer cards turn inward sharply with tangible 3D depth
+            const rotateY = -Math.sign(u) * Math.pow(absU, 0.95) * maxAngle;
 
-            // 4. Center cards are slightly larger (scale 1.0); outer cards scale down slightly
-            const scale = 1 - Math.pow(absU, 1.3) * 0.12;
+            // 4. Center cards are slightly larger (scale 1.0); outer cards scale down gently
+            const scale = 1 - Math.pow(absU, 1.2) * 0.14;
 
             // Natural edge fade: fully opaque across visible track, smoothly dissolves at boundary
             const edgeFade = absU > 0.82 ? Math.max(0, (1 - absU) / 0.18) : 1;
@@ -276,7 +277,7 @@ export const HowItWorksSection: React.FC = () => {
                     handleCardClick(idx);
                   }
                 }}
-                className="absolute rounded-[28px] focus:outline-none focus:ring-2 focus:ring-[#FF2DA8]/50 will-change-transform"
+                className="absolute rounded-[30px] focus:outline-none focus:ring-2 focus:ring-[#FF2DA8]/50 will-change-transform"
                 style={{
                   width: `${cardWidth}px`,
                   height: `${cardHeight}px`,
@@ -289,7 +290,7 @@ export const HowItWorksSection: React.FC = () => {
               >
                 {/* 3D Flip Card Container */}
                 <div
-                  className="w-full h-full relative rounded-[28px] transition-transform duration-600 ease-[cubic-bezier(0.22,1,0.36,1)]"
+                  className="w-full h-full relative rounded-[30px] transition-transform duration-600 ease-[cubic-bezier(0.22,1,0.36,1)]"
                   style={{
                     transformStyle: 'preserve-3d',
                     transform: isCardFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
@@ -297,10 +298,10 @@ export const HowItWorksSection: React.FC = () => {
                 >
                   {/* FRONT FACE: Minimal, Elegant Portrait Card */}
                   <div
-                    className={`absolute inset-0 w-full h-full rounded-[28px] p-6 sm:p-7 flex flex-col justify-between border backdrop-blur-xl shadow-xl transition-colors duration-300 overflow-hidden [backface-visibility:hidden] ${
+                    className={`absolute inset-0 w-full h-full rounded-[30px] p-6 sm:p-7 flex flex-col justify-between border backdrop-blur-xl shadow-xl transition-colors duration-300 overflow-hidden [backface-visibility:hidden] ${
                       isCardFlipped
-                        ? 'border-[#FF2DA8]/70 shadow-[0_0_35px_rgba(255,45,168,0.2)] bg-white/95 dark:bg-[#121216]/95'
-                        : 'border-zinc-200/90 dark:border-zinc-800/80 bg-white/85 dark:bg-[#111115]/85 hover:border-[#FF2DA8]/50 dark:hover:border-[#FF2DA8]/50'
+                        ? 'border-[#FF2DA8]/70 shadow-[0_0_35px_rgba(255,45,168,0.25)] bg-white/95 dark:bg-[#121216]/95'
+                        : 'border-zinc-200/90 dark:border-zinc-800/80 bg-white/85 dark:bg-[#111115]/90 hover:border-[#FF2DA8]/60 dark:hover:border-[#FF2DA8]/60 hover:shadow-[0_0_30px_rgba(255,45,168,0.18)]'
                     }`}
                   >
                     {/* Top Row: Step Number & Dot */}
@@ -330,7 +331,7 @@ export const HowItWorksSection: React.FC = () => {
                   </div>
 
                   {/* BACK FACE: Detailed Information Revealed on Hover */}
-                  <div className="absolute inset-0 w-full h-full rounded-[28px] p-6 sm:p-7 flex flex-col justify-between border border-[#FF2DA8]/60 backdrop-blur-xl shadow-2xl overflow-hidden [backface-visibility:hidden] [transform:rotateY(180deg)] bg-white/95 dark:bg-[#0E0E12]/95 text-zinc-900 dark:text-white">
+                  <div className="absolute inset-0 w-full h-full rounded-[30px] p-6 sm:p-7 flex flex-col justify-between border border-[#FF2DA8]/60 backdrop-blur-xl shadow-2xl overflow-hidden [backface-visibility:hidden] [transform:rotateY(180deg)] bg-white/95 dark:bg-[#0E0E12]/95 text-zinc-900 dark:text-white">
                     <div>
                       {/* Back Header */}
                       <div className="flex items-center justify-between pb-3 mb-3 border-b border-zinc-200/80 dark:border-zinc-800">
