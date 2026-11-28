@@ -173,20 +173,25 @@ export const HowItWorksSection: React.FC = () => {
     setActiveFlippedIndex((prev) => (prev === index ? null : index));
   };
 
-  // Responsive dimensions and horizontal conveyor spacing
+  // Responsive dimensions and horizontal conveyor spacing matching Voyager reference proportions
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
-  const cardWidth = isMobile ? 220 : 260;
-  const cardHeight = isMobile ? 320 : 380;
-  const cardGap = isMobile ? 20 : 35;
-  const stride = cardWidth + cardGap; // ~295px desktop, ~240px mobile
-  const totalSpan = steps.length * stride; // ~1180px desktop, ~960px mobile
-  const halfSpan = totalSpan / 2; // ~590px desktop, ~480px mobile
+  const cardWidth = isMobile ? 230 : 280;
+  const cardHeight = isMobile ? 330 : 380;
+  const cardGap = isMobile ? 22 : 46;
+  const stride = cardWidth + cardGap; // ~326px desktop, ~252px mobile
+  const totalSpan = steps.length * stride; // ~1304px desktop, ~1008px mobile
+  const halfSpan = totalSpan / 2; // ~652px desktop, ~504px mobile
 
-  // Pronounced arc curvature settings matching the Voyager reference image
-  const arcDropMax = isMobile ? 42 : 72; // px vertical downward curve for outer cards
-  const arcDepthMax = isMobile ? 130 : 240; // px depth recession into screen for outer cards
-  const maxAngle = isMobile ? 34 : 45; // degrees inward Y rotation for outer cards
-  const scenePerspective = isMobile ? '720px' : '880px';
+  // Refined curved arc geometry matching the Voyager reference image:
+  // - Center card is at apex (translateY = 0) and closest (translateZ = 0)
+  // - Outer cards curve gracefully downward along a smooth arc (arcDropMax ~34px)
+  // - Outer cards recede deep into 3D perspective along concave arc (arcDepthMax ~190px)
+  // - Outer cards turn inward with natural Y-axis rotation facing toward center viewer (maxAngle ~38deg)
+  // - Subtle scale falloff (scale ~0.88 for outer cards)
+  const arcDropMax = isMobile ? 20 : 34; // px vertical downward curve for outer cards
+  const arcDepthMax = isMobile ? 120 : 190; // px depth recession into screen for outer cards
+  const maxAngle = isMobile ? 30 : 38; // degrees inward Y rotation for outer cards
+  const scenePerspective = isMobile ? '780px' : '960px';
 
   return (
     <section
@@ -222,9 +227,9 @@ export const HowItWorksSection: React.FC = () => {
             perspective: scenePerspective,
             transformStyle: 'preserve-3d',
             maskImage:
-              'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
+              'linear-gradient(to right, transparent, black 3%, black 97%, transparent)',
             WebkitMaskImage:
-              'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
+              'linear-gradient(to right, transparent, black 3%, black 97%, transparent)',
           }}
         >
           {steps.map((stepItem, idx) => {
@@ -245,19 +250,19 @@ export const HowItWorksSection: React.FC = () => {
 
             // Curved Arc Geometry matching the reference image:
             // 1. Center cards are highest (translateY = 0); outer cards visibly drop downward along a smooth arc
-            const translateY = Math.pow(absU, 1.35) * arcDropMax;
+            const translateY = Math.pow(absU, 1.4) * arcDropMax;
 
             // 2. Center cards are closest (translateZ = 0); outer cards recede deep into 3D perspective
-            const translateZ = -Math.pow(absU, 1.2) * arcDepthMax;
+            const translateZ = -Math.pow(absU, 1.3) * arcDepthMax;
 
             // 3. Center cards face forward (rotateY = 0); outer cards turn inward sharply with tangible 3D depth
-            const rotateY = -Math.sign(u) * Math.pow(absU, 0.95) * maxAngle;
+            const rotateY = -Math.sign(u) * Math.pow(absU, 0.9) * maxAngle;
 
             // 4. Center cards are slightly larger (scale 1.0); outer cards scale down gently
-            const scale = 1 - Math.pow(absU, 1.2) * 0.14;
+            const scale = 1 - Math.pow(absU, 1.2) * 0.12;
 
-            // Natural edge fade: fully opaque across visible track, smoothly dissolves at boundary
-            const edgeFade = absU > 0.82 ? Math.max(0, (1 - absU) / 0.18) : 1;
+            // Natural edge fade: fully visible across the wide track, gently dissolving at the extreme edge
+            const edgeFade = absU > 0.90 ? Math.max(0, (1 - absU) / 0.10) : 1;
             const zIndex = Math.round(30 - 20 * absU);
 
             const isCardFlipped = activeFlippedIndex === idx;
@@ -277,7 +282,7 @@ export const HowItWorksSection: React.FC = () => {
                     handleCardClick(idx);
                   }
                 }}
-                className="absolute rounded-[30px] focus:outline-none focus:ring-2 focus:ring-[#FF2DA8]/50 will-change-transform"
+                className="absolute rounded-[28px] focus:outline-none focus:ring-2 focus:ring-[#FF2DA8]/50 will-change-transform"
                 style={{
                   width: `${cardWidth}px`,
                   height: `${cardHeight}px`,
@@ -290,48 +295,51 @@ export const HowItWorksSection: React.FC = () => {
               >
                 {/* 3D Flip Card Container */}
                 <div
-                  className="w-full h-full relative rounded-[30px] transition-transform duration-600 ease-[cubic-bezier(0.22,1,0.36,1)]"
+                  className="w-full h-full relative rounded-[28px] transition-transform duration-600 ease-[cubic-bezier(0.22,1,0.36,1)]"
                   style={{
                     transformStyle: 'preserve-3d',
                     transform: isCardFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
                   }}
                 >
-                  {/* FRONT FACE: Minimal, Elegant Portrait Card */}
+                  {/* FRONT FACE: Minimal, Elegant Portrait Card matching Voyager2 reference */}
                   <div
-                    className={`absolute inset-0 w-full h-full rounded-[30px] p-6 sm:p-7 flex flex-col justify-between border backdrop-blur-xl shadow-xl transition-colors duration-300 overflow-hidden [backface-visibility:hidden] ${
+                    className={`absolute inset-0 w-full h-full rounded-[28px] p-6 sm:p-7 flex flex-col justify-between border backdrop-blur-xl transition-all duration-300 overflow-hidden [backface-visibility:hidden] ${
                       isCardFlipped
                         ? 'border-[#FF2DA8]/70 shadow-[0_0_35px_rgba(255,45,168,0.25)] bg-white/95 dark:bg-[#121216]/95'
-                        : 'border-zinc-200/90 dark:border-zinc-800/80 bg-white/85 dark:bg-[#111115]/90 hover:border-[#FF2DA8]/60 dark:hover:border-[#FF2DA8]/60 hover:shadow-[0_0_30px_rgba(255,45,168,0.18)]'
+                        : 'border-zinc-200/90 dark:border-zinc-800/80 bg-white/85 dark:bg-[#101014]/90 hover:border-[#FF2DA8]/60 dark:hover:border-[#FF2DA8]/60 hover:shadow-[0_0_30px_rgba(255,45,168,0.18)] shadow-lg'
                     }`}
                   >
-                    {/* Top Row: Step Number & Dot */}
-                    <div className="flex items-center justify-between">
+                    {/* Subtle top ambient glow */}
+                    <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-zinc-100/50 dark:from-[#FF2DA8]/5 via-transparent to-transparent pointer-events-none" />
+
+                    {/* Top Row: Step Number & Live Status Dot */}
+                    <div className="flex items-center justify-between relative z-10">
                       <span className="font-mono text-xs font-bold text-[#FF2DA8] tracking-widest px-2.5 py-1 rounded-full bg-[#FF2DA8]/10 border border-[#FF2DA8]/20">
                         {stepItem.step}
                       </span>
                       <span className="w-2 h-2 rounded-full bg-[#D4FF3F] glow-chartreuse-sm" />
                     </div>
 
-                    {/* Middle: Clean Minimal Typography */}
-                    <div className="my-auto py-2">
-                      <div className="w-8 h-1 rounded-full bg-zinc-200 dark:bg-zinc-800 mb-6" />
-                      <h3 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-white font-display tracking-tight leading-tight mb-2">
+                    {/* Bottom Area: Editorial Typography anchored at lower card matching reference */}
+                    <div className="relative z-10 mt-auto pt-6">
+                      <div className="w-8 h-1 rounded-full bg-zinc-200 dark:bg-zinc-800 mb-4" />
+                      <h3 className="text-2xl sm:text-[26px] font-bold text-zinc-900 dark:text-white font-display tracking-tight leading-tight mb-2">
                         {stepItem.title}
                       </h3>
                       <p className="text-xs sm:text-sm font-medium text-zinc-500 dark:text-zinc-400">
                         {stepItem.subtitle}
                       </p>
-                    </div>
 
-                    {/* Bottom Indicator */}
-                    <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800/60 flex items-center justify-between text-[11px] font-mono text-zinc-400 dark:text-zinc-500">
-                      <span>Hover to flip</span>
-                      <span className="text-[#FF2DA8] font-bold text-xs">→</span>
+                      {/* Hairline Divider & Indicator */}
+                      <div className="pt-3 mt-4 border-t border-zinc-100 dark:border-zinc-800/60 flex items-center justify-between text-[11px] font-mono text-zinc-400 dark:text-zinc-500">
+                        <span>Hover to flip</span>
+                        <span className="text-[#FF2DA8] font-bold text-xs">→</span>
+                      </div>
                     </div>
                   </div>
 
                   {/* BACK FACE: Detailed Information Revealed on Hover */}
-                  <div className="absolute inset-0 w-full h-full rounded-[30px] p-6 sm:p-7 flex flex-col justify-between border border-[#FF2DA8]/60 backdrop-blur-xl shadow-2xl overflow-hidden [backface-visibility:hidden] [transform:rotateY(180deg)] bg-white/95 dark:bg-[#0E0E12]/95 text-zinc-900 dark:text-white">
+                  <div className="absolute inset-0 w-full h-full rounded-[28px] p-6 sm:p-7 flex flex-col justify-between border border-[#FF2DA8]/60 backdrop-blur-xl shadow-2xl overflow-hidden [backface-visibility:hidden] [transform:rotateY(180deg)] bg-white/95 dark:bg-[#0E0E12]/95 text-zinc-900 dark:text-white">
                     <div>
                       {/* Back Header */}
                       <div className="flex items-center justify-between pb-3 mb-3 border-b border-zinc-200/80 dark:border-zinc-800">
