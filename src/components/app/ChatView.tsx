@@ -572,7 +572,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
                     Review Payload Before Cloud Transmission
                   </h3>
                   <div className="text-[11px] text-zinc-400 font-mono">
-                    TARGET: Google Cloud / Firebase AI Logic (gemini-2.5-flash)
+                    TARGET: Google Cloud / Firebase AI Logic (gemini-3.8-flash)
                   </div>
                 </div>
               </div>
