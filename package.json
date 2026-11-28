@@ -9,10 +9,19 @@
     "preview": "vite preview",
     "test": "vitest run"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "keywords": [
+    "firebase",
+    "firebase-ai-logic",
+    "gemini-nano",
+    "on-device-ai",
+    "hybrid-ai",
+    "local-first",
+    "chrome-prompt-api",
+    "privacy"
+  ],
+  "author": "beenish-majeed",
+  "license": "MIT",
+  "description": "A private, local-first AI workspace featuring genuine hybrid on-device and cloud inference powered by Firebase AI Logic.",
   "dependencies": {
     "@react-three/fiber": "^9.8.2",
     "dexie": "^4.4.7",
